@@ -3,10 +3,103 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="720" Width="1280">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        
+        
+        <!-- Menu -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="#E0E0E0" VerticalAlignment="Center" Height="30" HorizontalAlignment="Left">
+            <Menu>
+                <MenuItem Header="File" FontSize="15">
+                    <MenuItem Header="New"/>
+                    <MenuItem Header="Open"/>
+                    <MenuItem Header="Save"/>
+                    <MenuItem Header="Save as">
+                        <MenuItem Header="PNG picture"/>
+                        <MenuItem Header="JPEG picture"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Print"/>
+                    <MenuItem Header="Exit"/>
+                </MenuItem>
+            </Menu>
+            <Menu>
+                <MenuItem Header="Edit" FontSize="15">
+                    <MenuItem Header="Cut"/>
+                    <MenuItem Header="Copy"/>
+                    <MenuItem Header="Paste"/>
+                </MenuItem>
+            </Menu>
+        </StackPanel>
+        
+        <!-- Tools -->
+        <Grid Grid.Row="1" Background="#E0E0E0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Tool vẽ cơ bản -->
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
+                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" ToolTip="Pencil Tool">
+                    <fa:IconBlock Icon="Pencil"/>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool">
+                    <fa:IconBlock Icon="FillDrip"/>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" ToolTip="Text Tool">
+                    <fa:IconBlock Icon="Font"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" ToolTip="Eraser Tool">
+                    <fa:IconBlock Icon="Eraser"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Color Picker">
+                    <fa:IconBlock Icon="Eyedropper"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" ToolTip="Zoom In">
+                    <fa:IconBlock Icon="SearchPlus"/>
+                </Button>
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" FontSize="10" Margin="0,5,0,0"/>
+            </Grid>
+            
+            
+            
+        </Grid>
+        
+        <!-- Canva vẽ -->
+        <Canvas Grid.Row="2">
+            
+        </Canvas>
+
+        <Slider Grid.Row="3" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="40,0" ToolTip="Zoom"/>
+        
+        
     </Grid>
 </Window>
