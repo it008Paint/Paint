@@ -10,12 +10,12 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="90"/>
             <RowDefinition/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        
-        
+
+
         <!-- Menu -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Background="#E0E0E0" VerticalAlignment="Center" Height="30" HorizontalAlignment="Left">
             <Menu>
@@ -40,22 +40,22 @@
                 </MenuItem>
             </Menu>
         </StackPanel>
-        
-        <!-- Tools -->
+
+        <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="314"/>
+                <ColumnDefinition Width="546"/>
             </Grid.ColumnDefinitions>
-            
-            <!-- Tool vẽ cơ bản -->
-            <Grid Grid.Column="0">
+
+            <!-- Tool -->
+            <Grid HorizontalAlignment="Center" Width="120">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -88,18 +88,110 @@
                 </Button>
                 <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" FontSize="10" Margin="0,5,0,0"/>
             </Grid>
-            
-            
-            
+
+
+            <!-- Shapes -->
+            <Grid Grid.Column="1" HorizontalAlignment="Center" Width="160">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30">
+                    <fa:IconImage Icon="Minus"/>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30">
+                    <fa:IconImage Icon="WaveSquare"/>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30">
+                    <fa:IconImage Icon="Circle"/>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30">
+                    <fa:IconImage Icon="Square"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30">
+                    <fa:IconImage Icon="Play"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30">
+                    <fa:IconImage Icon="Diamond"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30">
+                    <fa:IconImage Icon="Star"/>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30">
+                    <fa:IconImage Icon="ArrowRight"/>
+                </Button>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Text="Shapes" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+            </Grid>
+
+            <!-- Colors -->
+            <Grid Grid.Column="2" HorizontalAlignment="Center" Width="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" Background="Black"/>
+
+                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" Background="White"/>
+
+                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" Background="#800000"/>
+
+                <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30" Background="Red"/>
+
+                <Button Grid.Row="0" Grid.Column="4" Width="30" Height="30" Background="Orange"/>
+
+                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" Background="Yellow"/>
+
+                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" Background="Green"/>
+
+                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" Background="Aqua"/>
+
+                <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Background="Blue"/>
+
+                <Button Grid.Row="1" Grid.Column="4" Width="30" Height="30" Background="Pink"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Text="Colors" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <!-- Nâng cao -->
+            <Grid Grid.Column="3">
+                
+            </Grid>
         </Grid>
-        
+
         <!-- Canva vẽ -->
         <Canvas Grid.Row="2">
-            
+
         </Canvas>
 
         <Slider Grid.Row="3" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="40,0" ToolTip="Zoom"/>
-        
-        
+
+
     </Grid>
 </Window>
