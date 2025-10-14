@@ -7,7 +7,8 @@
         xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1280">
+        Title="MainWindow" Height="720" Width="1280"
+        ResizeMode="CanMinimize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
@@ -65,12 +66,31 @@
         </Grid>
 
         <!-- Canva vẽ -->
-        <Canvas Grid.Row="2">
+        <Grid Grid.Row="2" Background="#f2f2f2">
+            <Canvas Grid.Row="2" Width="1150" Height="500" Background="White">
 
-        </Canvas>
+            </Canvas>
+        </Grid>
 
-        <Slider Grid.Row="3" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="40,0" ToolTip="Zoom"/>
-
-
+        <!-- Thanh dưới -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <ComboBox Margin="20,0">
+                <ComboBoxItem Content="200%"/>
+                <ComboBoxItem Content="150%"/>
+                <ComboBoxItem Content="125%" IsSelected="True"/>
+                <ComboBoxItem Content="100%"/>
+                <ComboBoxItem Content="75%"/>
+                <ComboBoxItem Content="50%"/>
+                <ComboBoxItem Content="25%"/>
+            </ComboBox>
+            <Button Width="20" Height="20">
+                <fa:IconImage Icon="SearchMinus"/>
+            </Button>
+            <Slider Width="120" Margin="20,0" ToolTip="Zoom" VerticalAlignment="Center"/>
+            <Button Width="20" Height="20" Margin="0,0,30,0">
+                <fa:IconImage Icon="SearchPlus"/>
+            </Button>
+        </StackPanel>
+     
     </Grid>
 </Window>
