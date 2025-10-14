@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+        xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="1280">
@@ -44,144 +45,22 @@
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="250"/>
                 <ColumnDefinition Width="314"/>
                 <ColumnDefinition Width="546"/>
             </Grid.ColumnDefinitions>
 
             <!-- Tool -->
-            <Grid HorizontalAlignment="Center" Width="120">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" ToolTip="Pencil Tool">
-                    <fa:IconBlock Icon="Pencil"/>
-                </Button>
-
-                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool">
-                    <fa:IconBlock Icon="FillDrip"/>
-                </Button>
-
-                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" ToolTip="Text Tool">
-                    <fa:IconBlock Icon="Font"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" ToolTip="Eraser Tool">
-                    <fa:IconBlock Icon="Eraser"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Color Picker">
-                    <fa:IconBlock Icon="Eyedropper"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" ToolTip="Zoom In">
-                    <fa:IconBlock Icon="SearchPlus"/>
-                </Button>
-                <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" FontSize="10" Margin="0,5,0,0"/>
-            </Grid>
-
-
+            <components:SimpleTools Grid.Column="0" HorizontalAlignment="Center"/>
             <!-- Shapes -->
-            <Grid Grid.Column="1" HorizontalAlignment="Center" Width="160">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30">
-                    <fa:IconImage Icon="Minus"/>
-                </Button>
-
-                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30">
-                    <fa:IconImage Icon="WaveSquare"/>
-                </Button>
-
-                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30">
-                    <fa:IconImage Icon="Circle"/>
-                </Button>
-
-                <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30">
-                    <fa:IconImage Icon="Square"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30">
-                    <fa:IconImage Icon="Play"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30">
-                    <fa:IconImage Icon="Diamond"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30">
-                    <fa:IconImage Icon="Star"/>
-                </Button>
-
-                <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30">
-                    <fa:IconImage Icon="ArrowRight"/>
-                </Button>
-
-                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Text="Shapes" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-            </Grid>
-
+            <components:Shapes Grid.Column="1" HorizontalAlignment="Center" Margin="0,5,0,0"/>
             <!-- Colors -->
-            <Grid Grid.Column="2" HorizontalAlignment="Center" Width="200">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="40"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" Background="Black"/>
-
-                <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" Background="White"/>
-
-                <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" Background="#800000"/>
-
-                <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30" Background="Red"/>
-
-                <Button Grid.Row="0" Grid.Column="4" Width="30" Height="30" Background="Orange"/>
-
-                <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" Background="Yellow"/>
-
-                <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" Background="Green"/>
-
-                <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" Background="Aqua"/>
-
-                <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Background="Blue"/>
-
-                <Button Grid.Row="1" Grid.Column="4" Width="30" Height="30" Background="Pink"/>
-
-                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Text="Colors" HorizontalAlignment="Center"/>
-            </Grid>
-
+            <components:Colors Grid.Column="2" HorizontalAlignment="Center"/>
             <!-- Nâng cao -->
             <Grid Grid.Column="3">
-                
+
             </Grid>
         </Grid>
 
