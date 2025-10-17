@@ -19,29 +19,7 @@
 
 
         <!-- Menu -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="#E0E0E0" VerticalAlignment="Center" Height="30" HorizontalAlignment="Left">
-            <Menu>
-                <MenuItem Header="File" FontSize="15">
-                    <MenuItem Header="New"/>
-                    <MenuItem Header="Open"/>
-                    <MenuItem Header="Save"/>
-                    <MenuItem Header="Save as">
-                        <MenuItem Header="PNG picture"/>
-                        <MenuItem Header="JPEG picture"/>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Header="Print"/>
-                    <MenuItem Header="Exit"/>
-                </MenuItem>
-            </Menu>
-            <Menu>
-                <MenuItem Header="Edit" FontSize="15">
-                    <MenuItem Header="Cut"/>
-                    <MenuItem Header="Copy"/>
-                    <MenuItem Header="Paste"/>
-                </MenuItem>
-            </Menu>
-        </StackPanel>
+        <components:Menu_bar Grid.Row="0" HorizontalAlignment="Left"/>
 
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
