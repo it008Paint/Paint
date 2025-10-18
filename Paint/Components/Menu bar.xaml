@@ -9,15 +9,15 @@
         <Menu>
             <MenuItem Header="File" FontSize="15">
                 <MenuItem Header="New"/>
-                <MenuItem Header="Open"/>
-                <MenuItem Header="Save"/>
+                <MenuItem Header="Open" Click="Open_Click"/>
+                <MenuItem Header="Save" Click="Save_Click"/>
                 <MenuItem Header="Save as">
-                    <MenuItem Header="PNG picture"/>
-                    <MenuItem Header="JPEG picture"/>
+                    <MenuItem Header="PNG picture" Click="SaveAsPNG_Click"/>
+                    <MenuItem Header="JPEG picture" Click="SaveAsJPEG_Click"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Print"/>
-                <MenuItem Header="Exit"/>
+                <MenuItem Header="Print" Click="Print_Click"/>
+                <MenuItem Header="Exit" Click="Exit_Click"/>
             </MenuItem>
         </Menu>
         <Menu>
