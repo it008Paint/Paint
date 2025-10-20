@@ -21,35 +21,43 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30">
+        <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" 
+                Click="Line_Click"> 
             <fa:IconImage Icon="Minus"/>
         </Button>
 
-        <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30">
+        <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30"
+                Click="Wavesquare_Click">
             <fa:IconImage Icon="WaveSquare"/>
         </Button>
 
-        <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30">
+        <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30"
+                Click="Circle_Click">
             <fa:IconImage Icon="Circle"/>
         </Button>
 
-        <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30">
+        <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30"
+                Click="Square_Click">
             <fa:IconImage Icon="Square"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30">
+        <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30"
+                Click="Play_Click">
             <fa:IconImage Icon="Play"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30">
+        <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30"
+                Click="Diamond_Click">
             <fa:IconImage Icon="Diamond"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30">
+        <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30"
+                Click="Star_Click">
             <fa:IconImage Icon="Star"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30">
+        <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30"
+                Click="ArrowRight_Click">
             <fa:IconImage Icon="ArrowRight"/>
         </Button>
 

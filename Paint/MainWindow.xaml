@@ -7,14 +7,13 @@
         xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1280"
-        ResizeMode="CanMinimize">
+        Title="MainWindow" Height="720" Width="1280" MinHeight="720" MinWidth="1280">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="90"/>
-            <RowDefinition/>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="12*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
 
@@ -24,19 +23,19 @@
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150"/>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="314"/>
-                <ColumnDefinition Width="546"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2.5*"/>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="5*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Tool -->
-            <components:SimpleTools Grid.Column="0" HorizontalAlignment="Center"/>
+            <components:SimpleTools Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Shapes -->
-            <components:Shapes Grid.Column="1" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+            <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Colors -->
-            <components:Colors Grid.Column="2" HorizontalAlignment="Center"/>
+            <components:Colors Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Nâng cao -->
             <Grid Grid.Column="3">
 
@@ -45,7 +44,18 @@
 
         <!-- Canva vẽ -->
         <Grid Grid.Row="2" Background="#f2f2f2">
-            <Canvas Grid.Row="2" Width="1150" Height="500" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="25*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="25*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Canvas Grid.Row="1" Grid.Column="1" Background="White" x:Name="canvas"
+                    Mouse.MouseDown="canvas_MouseDown" Mouse.MouseMove="canvas_MouseMove" Mouse.MouseUp="canvas_MouseUp">
 
             </Canvas>
         </Grid>
