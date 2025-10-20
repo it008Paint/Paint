@@ -20,9 +20,50 @@ namespace Paint.Components
     /// </summary>
     public partial class Shapes : UserControl
     {
+        public event Action<string> Shape;
         public Shapes()
         {
             InitializeComponent();
+        }
+
+        private void Line_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Line");
+        }
+
+        private void Wavesquare_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Wavesquare");
+        }
+
+        private void Circle_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Circle");
+        }
+
+        private void Square_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Square");
+        }
+
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Play");
+        }
+
+        private void Diamond_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Diamond");
+        }
+
+        private void Star_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("Star");
+        }
+
+        private void ArrowRight_Click(object sender, RoutedEventArgs e)
+        {
+            Shape?.Invoke("ArrowRight");
         }
     }
 }
