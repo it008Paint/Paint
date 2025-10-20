@@ -21,48 +21,59 @@ namespace Paint.Components
     /// </summary>
     public partial class Menu_bar : UserControl
     {
+        public MainWindow MainWindowRef { get; set; }
         public Menu_bar()
         {
             InitializeComponent();
         }
 
-        
+        private void New_Click(object sender, RoutedEventArgs e)
+        {
+            FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+            MainWindowRef.PaintSurface.Children.Clear();
+            MainWindowRef.CurrentFilePath = null;
+        }
         private void Open_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFile = new OpenFileDialog();
-            openFile.Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg";
-            if (openFile.ShowDialog() == true)
+            var dlg = new OpenFileDialog { Filter = "Paint project (*.json)|*.json" };
+            if (dlg.ShowDialog() == true)
             {
-
+                FileManager.LoadCanvasFromJson(MainWindowRef.PaintSurface, dlg.FileName);
+                MainWindowRef.CurrentFilePath = dlg.FileName;
             }
         }
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFile = new SaveFileDialog();
-            saveFile.Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg";
-            if (saveFile.ShowDialog() == true)
+            if (string.IsNullOrEmpty(MainWindowRef.CurrentFilePath))
             {
-
+                SaveAs_Click(sender, e);
+                return;
             }
+            FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
         }
-        private void SaveAsPNG_Click(object sender, RoutedEventArgs e)
+        private void SaveAs_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFile = new SaveFileDialog();
-            saveFile.Filter = "Image files (*.png)|*.png";
-            if (saveFile.ShowDialog() == true)
+            var dlg = new SaveFileDialog { Filter = "Paint project (*.json)|*.json" };
+            if (dlg.ShowDialog() == true)
             {
-
+                FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, dlg.FileName);
+                MainWindowRef.CurrentFilePath = dlg.FileName;
             }
         }
-        private void SaveAsJPEG_Click(object sender, RoutedEventArgs e)
+        private void Import_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFile = new SaveFileDialog();
-            saveFile.Filter = "Image files (*.jpeg)|*.jpeg";
-            if (saveFile.ShowDialog() == true)
-            {
+            FileManager.ImportImageToCanvas(MainWindowRef.PaintSurface);
+        }
 
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SaveFileDialog { Filter = "PNG image (*.png)|*.png|JPEG image (*.jpeg)|*.jpeg" };
+            if (dlg.ShowDialog() == true)
+            {
+                FileManager.ExportCanvasToPng(MainWindowRef.PaintSurface, dlg.FileName);
             }
         }
+
         private void Print_Click(object sender, RoutedEventArgs e)
         {
             PrintDialog print = new PrintDialog();
