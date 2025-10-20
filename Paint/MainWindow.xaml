@@ -19,7 +19,7 @@
 
 
         <!-- Menu -->
-        <components:Menu_bar Grid.Row="0" HorizontalAlignment="Left"/>
+        <components:Menu_bar x:Name="MainMenu" Grid.Row="0" HorizontalAlignment="Left"/>
 
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
@@ -45,7 +45,7 @@
 
         <!-- Canva vẽ -->
         <Grid Grid.Row="2" Background="#f2f2f2">
-            <Canvas Grid.Row="2" Width="1150" Height="500" Background="White">
+            <Canvas x:Name="PaintSurface" Grid.Row="2" Width="1150" Height="500" Background="White">
 
             </Canvas>
         </Grid>

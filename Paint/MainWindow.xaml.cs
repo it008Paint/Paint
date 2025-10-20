@@ -16,9 +16,11 @@ namespace Paint
     /// </summary>
     public partial class MainWindow : Window
     {
+        public string CurrentFilePath { get; set; }
         public MainWindow()
         {
             InitializeComponent();
+            MainMenu.MainWindowRef = this;
         }
     }
 }
