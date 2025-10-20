@@ -18,7 +18,7 @@
 
 
         <!-- Menu -->
-        <components:Menu_bar Grid.Row="0" HorizontalAlignment="Left"/>
+        <components:Menu_bar x:Name="MainMenu" Grid.Row="0" HorizontalAlignment="Left"/>
 
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
