@@ -54,7 +54,7 @@
                 <ColumnDefinition Width="25*"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Canvas Grid.Row="1" Grid.Column="1" Background="White" x:Name="canvas"
+            <Canvas Grid.Row="1" Grid.Column="1" Background="White" x:Name="PaintSurface"
                     Mouse.MouseDown="canvas_MouseDown" Mouse.MouseMove="canvas_MouseMove" Mouse.MouseUp="canvas_MouseUp">
 
             </Canvas>

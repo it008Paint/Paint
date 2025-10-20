@@ -24,9 +24,11 @@ namespace Paint
         Point startpoint;
         string? selectedshape = null;
         Shape? drawshape = null;
+        public string CurrentFilePath { get; set; }
         public MainWindow()
         {
             InitializeComponent();
+            MainMenu.MainWindowRef = this;
             currentshape.Shape += (text) =>
             {
                 selectedshape = text;
@@ -34,14 +36,14 @@ namespace Paint
         }
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Point startpoint = e.GetPosition(canvas);
+            Point startpoint = e.GetPosition(PaintSurface);
             createshape(startpoint);
         }
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (drawshape == null) return;
-            Point secondpoint = e.GetPosition(canvas);
+            Point secondpoint = e.GetPosition(PaintSurface);
             if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
             {
                 setposition(secondpoint);
@@ -92,7 +94,7 @@ namespace Paint
             {
                 drawshape.StrokeThickness = 5;
                 drawshape.Stroke = Brushes.Black;
-                canvas.Children.Add(drawshape);
+                PaintSurface.Children.Add(drawshape);
             }
         }
         private void setposition(Point secondpoint)
