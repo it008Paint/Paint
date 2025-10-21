@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup.Localizer;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Xml;
-using Microsoft.Win32;
-using Newtonsoft.Json;
 
 namespace Paint
 {
@@ -20,23 +26,69 @@ namespace Paint
         }
 
         // ==== Một phần tử trên Canvas (Shape hoặc Image) ====
-        private class ElementData
+        public class ElementData
         {
             public string Type { get; set; } = "";
-            public double X { get; set; }
-            public double Y { get; set; }
-
-            // Dành cho Shape
-            public double Width { get; set; }
-            public double Height { get; set; }
-            public string Fill { get; set; } = "";
-            public string Stroke { get; set; } = "";
-            public double StrokeThickness { get; set; }
-
-            // Dành cho Image
-            public string? ImageBase64 { get; set; }
         }
-
+        public class LineElement : ElementData
+        {
+            public double X1, Y1, X2, Y2;
+            public string? Stroke;
+            public double StrokeThickness;
+        }
+        public class CurveElement : ElementData
+        {
+            public List<System.Drawing.Point>? Point;
+            public string? Stroke;
+            public double StrokeThickness;
+        }
+        public class EllipseElement : ElementData
+        {
+            public double Left, Top, Width, Height;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class RectangleElement : ElementData
+        {
+            public double Left, Top, Width, Height;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class TriangleElement : ElementData
+        {
+            public List<System.Drawing.Point>? Point;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class DiamondElement : ElementData
+        {
+            public List<System.Drawing.Point>? Point;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class StarElement : ElementData
+        {
+            public List<System.Drawing.Point>? Point;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class ArrowElement : ElementData
+        {
+            public double StartX,StartY,EndX,EndY;
+            public string? Stroke;
+            public string? Fill;
+            public double StrokeThickness;
+        }
+        public class ImageElement : ElementData
+        {
+            public double Left, Top, Width, Height;
+            public string? ImageBase64;
+        }
         // ==== SAVE TO JSON ====
         public static void SaveCanvasToJson(Canvas canvas, string filePath)
         {
@@ -47,31 +99,58 @@ namespace Paint
 
             foreach (var child in canvas.Children)
             {
-                if (child is System.Windows.Shapes.Shape shape)
+                switch (child)
                 {
-                    data.Elements.Add(new ElementData
-                    {
-                        Type = shape.GetType().Name,
-                        X = Canvas.GetLeft(shape),
-                        Y = Canvas.GetTop(shape),
-                        Width = shape.Width,
-                        Height = shape.Height,
-                        Fill = (shape.Fill as SolidColorBrush)?.Color.ToString() ?? "",
-                        Stroke = (shape.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                        StrokeThickness = shape.StrokeThickness
-                    });
-                }
-                else if (child is Image image && image.Source is BitmapSource bitmap)
-                {
-                    data.Elements.Add(new ElementData
-                    {
-                        Type = "Image",
-                        X = Canvas.GetLeft(image),
-                        Y = Canvas.GetTop(image),
-                        Width = image.Width,
-                        Height = image.Height,
-                        ImageBase64 = EncodeBitmapToBase64(bitmap)
-                    });
+                    case Line line:
+                        data.Elements.Add(new LineElement
+                        {
+                            Type = "Line",
+                            X1 = line.X1,
+                            Y1 = line.Y1,
+                            X2 = line.X2,
+                            Y2 = line.Y2,
+                            Stroke = (line.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = line.StrokeThickness
+                        });
+                        break;
+
+                    case Ellipse ellipse:
+                        data.Elements.Add(new EllipseElement
+                        {
+                            Type = "Ellipse",
+                            Left = Canvas.GetLeft(ellipse),
+                            Top = Canvas.GetTop(ellipse),
+                            Width = ellipse.Width,
+                            Height = ellipse.Height,
+                            Stroke = (ellipse.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            Fill = (ellipse.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = ellipse.StrokeThickness
+                        });
+                        break;
+
+                    case System.Windows.Shapes.Rectangle rectangle:
+                        data.Elements.Add(new RectangleElement
+                        {
+                            Type = "Rectangle",
+                            //list point
+                            Stroke = (rectangle.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            Fill = (rectangle.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = rectangle.StrokeThickness
+                        });
+                        break;
+
+                    case System.Windows.Controls.Image image when image.Source is BitmapSource bitmap:
+                        data.Elements.Add(new ImageElement
+                        {
+                            Type = "Image",
+                            Left = Canvas.GetLeft(image),
+                            Top = Canvas.GetTop(image),
+                            Width = image.Width,
+                            Height = image.Height,
+                            ImageBase64 = EncodeBitmapToBase64(bitmap)
+                        });
+                        break;
+                        //triangle,diamond,star,curve,arrow
                 }
             }
 
@@ -86,43 +165,63 @@ namespace Paint
             var data = JsonConvert.DeserializeObject<CanvasData>(json);
 
             canvas.Children.Clear();
-            canvas.Background = (SolidColorBrush)(new BrushConverter().ConvertFromString(data.BackgroundColor));
+            canvas.Background = (SolidColorBrush)(new BrushConverter().ConvertFromString(data.BackgroundColor) ?? "White");
 
-            foreach (var e in data.Elements)
+            var root = JObject.Parse(json);
+            var elements = (JArray)root["Elements"];
+
+            foreach (var e in elements)
             {
-                if (e.Type == "Image" && e.ImageBase64 != null)
+                string type = e.Value<string>("Type") ?? string.Empty;
+                switch (type)
                 {
-                    var img = new Image
-                    {
-                        Source = DecodeBase64ToBitmap(e.ImageBase64),
-                        Width = e.Width,
-                        Height = e.Height
-                    };
-                    Canvas.SetLeft(img, e.X);
-                    Canvas.SetTop(img, e.Y);
-                    canvas.Children.Add(img);
-                }
-                else
-                {
-                    System.Windows.Shapes.Shape shape = e.Type switch
-                    {
-                        "Rectangle" => new System.Windows.Shapes.Rectangle(),
-                        "Ellipse" => new System.Windows.Shapes.Ellipse(),
-                        "Line" => new System.Windows.Shapes.Line(),
-                        _ => null
-                    };
-                    if (shape == null) continue;
+                    case "Line":
+                        var lineData = e.ToObject<LineElement>();
+                        var newline = new System.Windows.Shapes.Line
+                        {
+                            X1 = lineData.X1,
+                            X2 = lineData.X2,
+                            Y1 = lineData.Y1,
+                            Y2 = lineData.Y2,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(lineData.Stroke) ?? "Black"),
+                            StrokeThickness = lineData.StrokeThickness
+                        };
+                        canvas.Children.Add(newline);
+                        break;
+                    
+                    case "Image":
+                        var imageData = e.ToObject<ImageElement>();
+                        var newimage = new System.Windows.Controls.Image
+                        {
+                            Source = DecodeBase64ToBitmap(imageData.ImageBase64),
+                            Width = imageData.Width,
+                            Height = imageData.Height
+                        };
+                        Canvas.SetLeft(newimage, imageData.Left);
+                        Canvas.SetTop(newimage, imageData.Top);
+                        canvas.Children.Add(newimage);
+                        break;
 
-                    shape.Width = e.Width;
-                    shape.Height = e.Height;
-                    shape.Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(e.Fill));
-                    shape.Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(e.Stroke));
-                    shape.StrokeThickness = e.StrokeThickness;
+                    case "Ellipse":
+                        var elData = e.ToObject<EllipseElement>();
+                        var newellipse = new Ellipse
+                        {
+                            Width = elData.Width,
+                            Height = elData.Height,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Stroke) ?? "Black"),
+                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Fill) ?? ""),
+                            StrokeThickness = elData.StrokeThickness
+                        };
+                        Canvas.SetLeft(newellipse, elData.Left);
+                        Canvas.SetTop(newellipse, elData.Top);
+                        canvas.Children.Add(newellipse);
+                        break;
 
-                    Canvas.SetLeft(shape, e.X);
-                    Canvas.SetTop(shape, e.Y);
-                    canvas.Children.Add(shape);
-                }
+                    //////
+                    default:
+                        MessageBox.Show("nah");
+                        break;
+                }                
             }
         }
 
@@ -152,7 +251,7 @@ namespace Paint
             if (dlg.ShowDialog() == true)
             {
                 var bitmap = new BitmapImage(new Uri(dlg.FileName));
-                var img = new Image
+                var img = new System.Windows.Controls.Image
                 {
                     Source = bitmap,
                     Width = 1100,

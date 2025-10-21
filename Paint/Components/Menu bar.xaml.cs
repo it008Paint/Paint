@@ -29,7 +29,8 @@ namespace Paint.Components
 
         private void New_Click(object sender, RoutedEventArgs e)
         {
-            FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+            if (MainWindowRef.CurrentFilePath != null)
+                FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
             MainWindowRef.PaintSurface.Children.Clear();
             MainWindowRef.CurrentFilePath = null;
         }
