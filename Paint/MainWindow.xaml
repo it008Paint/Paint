@@ -54,15 +54,27 @@
                 <ColumnDefinition Width="25*"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Canvas Grid.Row="1" Grid.Column="1" Background="White" x:Name="PaintSurface"
-                    Mouse.MouseDown="canvas_MouseDown" Mouse.MouseMove="canvas_MouseMove" Mouse.MouseUp="canvas_MouseUp">
+            <ScrollViewer Grid.Row="1" Grid.Column="1" 
+                          x:Name="CanvasScrollViewer"
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto"
+                          PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
+                          PreviewMouseMove="CanvasScrollViewer_MouseMove"
+                          PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp">
 
-            </Canvas>
+                <!-- Canvas. Đặt kích thước cố định để Zoom và Scroll hoạt động -->
+                <Canvas Background="White" x:Name="PaintSurface"
+                        Width="1500" Height="1000"
+                        Mouse.MouseDown="canvas_MouseDown" 
+                        Mouse.MouseMove="canvas_MouseMove" 
+                        Mouse.MouseUp="canvas_MouseUp">
+                </Canvas>
+            </ScrollViewer>
         </Grid>
 
         <!-- Thanh dưới -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-            <ComboBox Margin="20,0">
+            <ComboBox x:Name="ZoomPreset" Margin="20,0">
                 <ComboBoxItem Content="200%"/>
                 <ComboBoxItem Content="150%"/>
                 <ComboBoxItem Content="125%" IsSelected="True"/>
@@ -71,11 +83,11 @@
                 <ComboBoxItem Content="50%"/>
                 <ComboBoxItem Content="25%"/>
             </ComboBox>
-            <Button Width="20" Height="20">
+            <Button x:Name="ZoomOutButton" Width="20" Height="20">
                 <fa:IconImage Icon="SearchMinus"/>
             </Button>
-            <Slider Width="120" Margin="20,0" ToolTip="Zoom" VerticalAlignment="Center"/>
-            <Button Width="20" Height="20" Margin="0,0,30,0">
+            <Slider x:Name="ZoomSlider" Width="120" Margin="20,0" ToolTip="Zoom" VerticalAlignment="Center" Minimum="0.25" Maximum="2.0" Value="1.0"/>
+            <Button x:Name="ZoomInButton" Width="20" Height="20" Margin="0,0,30,0">
                 <fa:IconImage Icon="SearchPlus"/>
             </Button>
         </StackPanel>
