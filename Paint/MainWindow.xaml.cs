@@ -211,6 +211,7 @@ namespace Paint
             {
                 drawshape.Stroke = Brushes.Black;
                 drawshape.StrokeThickness = 3;
+                drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
         }
