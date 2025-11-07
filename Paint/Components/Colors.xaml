@@ -20,25 +20,25 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" Background="Black"/>
+        <Button Grid.Row="0" Grid.Column="0" Width="30" Height="30" Background="Black" Click="black_Click"/>
 
-        <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" Background="White"/>
+        <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" Background="White" Click="white_Click"/>
 
-        <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" Background="#800000"/>
+        <Button Grid.Row="0" Grid.Column="2" Width="30" Height="30" Background="DarkRed" Click="darkred_Click"/>
 
-        <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30" Background="Red"/>
+        <Button Grid.Row="0" Grid.Column="3" Width="30" Height="30" Background="Red" Click="red_Click"/>
 
-        <Button Grid.Row="0" Grid.Column="4" Width="30" Height="30" Background="Orange"/>
+        <Button Grid.Row="0" Grid.Column="4" Width="30" Height="30" Background="Orange" Click="orange_Click"/>
 
-        <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" Background="Yellow"/>
+        <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" Background="Yellow" Click="yellow_Click"/>
 
-        <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" Background="Green"/>
+        <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" Background="Green" Click="green_Click"/>
 
-        <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" Background="Aqua"/>
+        <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" Background="Aqua" Click="aqua_Click"/>
 
-        <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Background="Blue"/>
+        <Button Grid.Row="1" Grid.Column="3" Width="30" Height="30" Background="Blue" Click="blue_Click"/>
 
-        <Button Grid.Row="1" Grid.Column="4" Width="30" Height="30" Background="Pink"/>
+        <Button Grid.Row="1" Grid.Column="4" Width="30" Height="30" Background="Pink" Click="pink_Click"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Text="Colors" HorizontalAlignment="Center" Margin="0,5,0,0"/>
     </Grid>
