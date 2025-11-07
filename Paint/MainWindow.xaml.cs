@@ -14,7 +14,8 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics; 
 using System.Numerics; 
 using System.Windows.Ink; 
-using System.Windows.Media.Animation; 
+using System.Windows.Media.Animation;
+//using System.Drawing;
 
 namespace Paint
 {
@@ -27,6 +28,8 @@ namespace Paint
         Point startpoint;
         string? selectedshape = null;
         Shape? drawshape = null;
+        SolidColorBrush currcolor = Brushes.Black;
+        int clickcountbezier = 2;
         public string CurrentFilePath { get; set; }
 
         // --- Logic Zoom ---
@@ -56,6 +59,11 @@ namespace Paint
             currentshape.Shape += (text) =>
             {
                 selectedshape = text;
+                clickcountbezier = 2;
+            };
+            currentcolor.Color += (color) =>
+            {
+                currcolor = color;
             };
         }
 
@@ -158,7 +166,10 @@ namespace Paint
 
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            drawshape = null;
+            if (drawshape is Path && clickcountbezier==2||drawshape is not Path)
+            {
+                drawshape = null;
+            }  
         }
 
         private void createshape(Point startpoint)
@@ -170,8 +181,6 @@ namespace Paint
             {
                 case "Line":
                     drawshape = new Line();
-                    ((Line)drawshape).X1 = startpoint.X;
-                    ((Line)drawshape).Y1 = startpoint.Y;
                     break;
 
                 case "Square":
@@ -182,8 +191,13 @@ namespace Paint
                     drawshape = new Ellipse();
                     break;
 
-                case "Wavesquare": 
-                    drawshape = new Polyline();
+                case "Wavesquare":
+                    if (clickcountbezier == 2)
+                    {
+                        clickcountbezier = 0;
+                        drawshape = new Path();
+                    }
+                    else clickcountbezier++;
                     break;
 
                 case "Play":
@@ -207,9 +221,9 @@ namespace Paint
                     break;
             }
 
-            if (drawshape != null)
+            if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
-                drawshape.Stroke = Brushes.Black;
+                drawshape.Stroke = currcolor;
                 drawshape.StrokeThickness = 3;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
@@ -226,6 +240,8 @@ namespace Paint
             switch (selectedshape)
             {
                 case "Line":
+                    ((Line)drawshape).X1 = startpoint.X;
+                    ((Line)drawshape).Y1 = startpoint.Y;
                     ((Line)drawshape).X2 = secondpoint.X;
                     ((Line)drawshape).Y2 = secondpoint.Y;
                     break;
@@ -245,6 +261,22 @@ namespace Paint
                     break;
 
                 case "Wavesquare":
+                    if (clickcountbezier == 0)
+                    {
+                        PathGeometry geo = new PathGeometry();
+                        PathFigure fig = new PathFigure();
+                        BezierSegment bez = new BezierSegment();
+                        fig.StartPoint = startpoint;
+                        bez.Point1 = startpoint;
+                        bez.Point2 = secondpoint;
+                        bez.Point3 = secondpoint;
+                        fig.Segments.Add(bez);
+                        geo.Figures.Add(fig);
+                        ((Path)drawshape).Data = geo;
+                    }else
+                    {
+                        bezierpoint(secondpoint, clickcountbezier);
+                    }
                     break;
 
                 case "Play":
@@ -289,6 +321,20 @@ namespace Paint
                     point3.Add(new Point(x + w, y));
                     ((Polygon)drawshape).Points = point3;
                     break;
+            }
+        }
+        private void bezierpoint(Point point,int clicknum)
+        {
+            PathGeometry geo = ((Path)drawshape).Data as PathGeometry;
+            PathFigure fig = geo.Figures[0];
+            BezierSegment bez = fig.Segments[0] as BezierSegment;
+            if (clicknum == 1)
+            {
+                bez.Point1 = point;
+            }
+            else
+            {
+                bez.Point2 = point;
             }
         }
     }
