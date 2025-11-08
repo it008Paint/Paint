@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -30,6 +30,11 @@ namespace Paint
         Shape? drawshape = null;
         SolidColorBrush currcolor = Brushes.Black;
         int clickcountbezier = 2;
+
+        private Polyline? currentPolyline = null;
+        private bool isDrawingPencil = false;
+        private Brush currentColor = Brushes.Black;
+        private double currentThickness = 2;
         public string CurrentFilePath { get; set; }
 
         // --- Logic Zoom ---
@@ -64,6 +69,12 @@ namespace Paint
             currentcolor.Color += (color) =>
             {
                 currcolor = color;
+                currentColor = color;
+            };
+
+            SimpleToolsRef.ToolSelected += (tool) =>
+            {
+                selectedshape = tool;
             };
         }
 
@@ -151,7 +162,22 @@ namespace Paint
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface);
-            createshape(startpoint);
+
+            if (selectedshape == "Pencil")
+            {
+                isDrawingPencil = true;
+                currentPolyline = new Polyline
+                {
+                    Stroke = currentColor,
+                    StrokeThickness = currentThickness,
+                    Points = new PointCollection { startpoint }
+                };
+                PaintSurface.Children.Add(currentPolyline);
+            }
+            else
+            {
+                createshape(startpoint);
+            }
         }
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
