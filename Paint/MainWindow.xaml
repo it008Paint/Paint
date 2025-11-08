@@ -31,7 +31,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Tool -->
-            <components:SimpleTools Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:SimpleTools x:Name="SimpleTools" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Shapes -->
             <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Colors -->
