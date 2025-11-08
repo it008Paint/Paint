@@ -14,7 +14,8 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics; 
 using System.Numerics; 
 using System.Windows.Ink; 
-using System.Windows.Media.Animation; 
+using System.Windows.Media.Animation;
+//using System.Drawing;
 
 namespace Paint
 {
@@ -27,6 +28,13 @@ namespace Paint
         Point startpoint;
         string? selectedshape = null;
         Shape? drawshape = null;
+
+        private Polyline? currentPolyline = null;
+        private bool isDrawingPencil = false;
+        private Brush currentColor = Brushes.Black;
+        private double currentThickness = 2;
+        SolidColorBrush currcolor = Brushes.Black;
+        int clickcountbezier = 2;
         public string CurrentFilePath { get; set; }
 
         // --- Logic Zoom ---
@@ -56,6 +64,16 @@ namespace Paint
             currentshape.Shape += (text) =>
             {
                 selectedshape = text;
+                clickcountbezier = 2;
+            };
+            currentcolor.Color += (color) =>
+            {
+                currcolor = color;
+            };
+
+            SimpleTools.ToolSelected += (tool) =>
+            {
+                selectedshape = tool;
             };
         }
 
@@ -143,106 +161,211 @@ namespace Paint
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface); // Đã sửa lỗi khai báo biến cục bộ
-            createshape(startpoint);
+            if (selectedshape == "Pencil")
+            {
+                isDrawingPencil = true;
+                currentPolyline = new Polyline
+                {
+                    Stroke = currentColor,
+                    StrokeThickness = currentThickness,
+                    Points = new PointCollection { startpoint }
+                };
+                PaintSurface.Children.Add(currentPolyline);
+            }
+            else
+            {
+                createshape(startpoint);
+            }
         }
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (drawshape == null) return;
-            Point secondpoint = e.GetPosition(PaintSurface);
-            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
+            Point currentPoint = e.GetPosition(PaintSurface);
+
+            if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
             {
-                setposition(secondpoint);
+                currentPolyline?.Points.Add(currentPoint);
+            }
+            else if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+            {
+                setposition(currentPoint);
             }
         }
 
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (isDrawingPencil)
+            {
+                isDrawingPencil = false;
+                currentPolyline = null;
+            }
             drawshape = null;
         }
 
         private void createshape(Point startpoint)
         {
+            // Sử dụng using System.Windows.Shapes;
+            // Sử dụng using System.Windows.Media;
+
             switch (selectedshape)
             {
                 case "Line":
                     drawshape = new Line();
-                    ((Line)drawshape).X1 = startpoint.X;
-                    ((Line)drawshape).Y1 = startpoint.Y;
                     break;
-                case "Wavesquare":
 
-                    break;
-                case "Circle":
-
-                    break;
                 case "Square":
+                    drawshape = new Rectangle();
+                    break;
+
+                case "Circle":
+                    drawshape = new Ellipse();
+                    break;
+
+                case "Wavesquare":
+                    if (clickcountbezier == 2)
+                    {
+                        clickcountbezier = 0;
+                        drawshape = new Path();
+                    }
+                    else clickcountbezier++;
+                    break;
+
+                case "Play":
                     drawshape = new Polygon();
                     ((Polygon)drawshape).Points = new PointCollection();
-                    ((Polygon)drawshape).Points.Add(new Point(startpoint.X, startpoint.Y));
-                    ((Polygon)drawshape).Points.Add(new Point(startpoint.X, startpoint.Y));
-                    ((Polygon)drawshape).Points.Add(new Point(startpoint.X, startpoint.Y));
-                    ((Polygon)drawshape).Points.Add(new Point(startpoint.X, startpoint.Y));
                     break;
-                case "Play":
 
+                case "Diamond": 
+                    drawshape = new Polygon();
+                    ((Polygon)drawshape).Points = new PointCollection();
                     break;
-                case "Diamond":
 
-                    break;
                 case "Star":
-
+                    drawshape = new Polygon();
+                    ((Polygon)drawshape).Points = new PointCollection();
                     break;
-                case "ArrowRight":
 
+                case "ArrowRight":
+                    drawshape = new Polygon();
+                    ((Polygon)drawshape).Points = new PointCollection();
                     break;
             }
-            if (drawshape != null)
+
+            if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
-                drawshape.StrokeThickness = 5;
-                drawshape.Stroke = Brushes.Black;
+                drawshape.Stroke = currcolor;
+                drawshape.StrokeThickness = 3;
+                drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
         }
 
         private void setposition(Point secondpoint)
         {
+            double x, y, w, h;
+            x = Math.Min(startpoint.X, secondpoint.X);
+            y = Math.Min(startpoint.Y, secondpoint.Y);
+            w = Math.Abs(startpoint.X - secondpoint.X);
+            h = Math.Abs(startpoint.Y - secondpoint.Y);
             switch (selectedshape)
             {
                 case "Line":
+                    ((Line)drawshape).X1 = startpoint.X;
+                    ((Line)drawshape).Y1 = startpoint.Y;
                     ((Line)drawshape).X2 = secondpoint.X;
                     ((Line)drawshape).Y2 = secondpoint.Y;
                     break;
-                case "Wavesquare":
 
-                    break;
-                case "Circle":
-
-                    break;
                 case "Square":
-
+                    ((Rectangle)drawshape).Width = w;
+                    ((Rectangle)drawshape).Height = h;
+                    Canvas.SetTop(drawshape, y);
+                    Canvas.SetLeft(drawshape, x);
                     break;
+
+                case "Circle":
+                    ((Ellipse)drawshape).Width = w;
+                    ((Ellipse)drawshape).Height = h;
+                    Canvas.SetTop(drawshape, y);
+                    Canvas.SetLeft(drawshape, x);
+                    break;
+
+                case "Wavesquare":
+                    if (clickcountbezier == 0)
+                    {
+                        PathGeometry geo = new PathGeometry();
+                        PathFigure fig = new PathFigure();
+                        BezierSegment bez = new BezierSegment();
+                        fig.StartPoint = startpoint;
+                        bez.Point1 = startpoint;
+                        bez.Point2 = secondpoint;
+                        bez.Point3 = secondpoint;
+                        fig.Segments.Add(bez);
+                        geo.Figures.Add(fig);
+                        ((Path)drawshape).Data = geo;
+                    }else
+                    {
+                        bezierpoint(secondpoint, clickcountbezier);
+                    }
+                    break;
+
                 case "Play":
-
+                    PointCollection point = new PointCollection();
+                    point.Add(new Point(x, y));
+                    point.Add(new Point(x+w,y+h/2));
+                    point.Add(new Point(x, y + h));
+                    ((Polygon)drawshape).Points = point;
                     break;
+
                 case "Diamond":
-
+                    PointCollection point1 = new PointCollection();
+                    point1.Add(new Point(x, y));
+                    point1.Add(new Point(x + w, y + h / 2));
+                    point1.Add(new Point(x, y + h));
+                    point1.Add(new Point(x - w, y + h/2));
+                    ((Polygon)drawshape).Points = point1;
                     break;
+
                 case "Star":
-
+                    PointCollection point2 = new PointCollection();
+                    point2.Add(new Point(x, y));
+                    point2.Add(new Point(x - 0.25 * w, y + 0.3 * h));
+                    point2.Add(new Point(x - 0.6 * w, y + 0.3 * h));
+                    point2.Add(new Point(x - 0.3 * w, y + 0.6 * h));
+                    point2.Add(new Point(x - 0.45 * w, y + h));
+                    point2.Add(new Point(x, y + 0.8 * h));
+                    point2.Add(new Point(x + 0.45 * w, y + h));
+                    point2.Add(new Point(x + 0.3 * w, y + 0.6 * h));
+                    point2.Add(new Point(x + 0.6 * w, y + 0.3 * h));
+                    point2.Add(new Point(x + 0.25 * w, y + 0.3 * h));
+                    ((Polygon)drawshape).Points = point2;
                     break;
-                case "ArrowRight":
 
+                case "ArrowRight":
+                    PointCollection point3 = new PointCollection();
+                    point3.Add(new Point(x, y));
+                    point3.Add(new Point(x + w, y));
+                    point3.Add(new Point(x + 0.8 * w, y - 0.5 * h));
+                    point3.Add(new Point(x + w, y));
+                    point3.Add(new Point(x + 0.8 * w, y + 0.5 * h));
+                    point3.Add(new Point(x + w, y));
+                    ((Polygon)drawshape).Points = point3;
                     break;
             }
         }
-
-        void UpdatePoint(Polygon poly, int index, double x, double y)
+        private void bezierpoint(Point point,int clicknum)
         {
-            Point p = poly.Points[index];
-            p.X = x;
-            p.Y = y;
-            poly.Points[index] = p;
+            PathGeometry geo = ((Path)drawshape).Data as PathGeometry;
+            PathFigure fig = geo.Figures[0];
+            BezierSegment bez = fig.Segments[0] as BezierSegment;
+            if (clicknum == 1)
+            {
+                bez.Point1 = point;
+            }
+            else
+            {
+                bez.Point2 = point;
+            }
         }
     }
 }
