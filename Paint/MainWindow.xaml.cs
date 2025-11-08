@@ -28,13 +28,13 @@ namespace Paint
         Point startpoint;
         string? selectedshape = null;
         Shape? drawshape = null;
+        SolidColorBrush currcolor = Brushes.Black;
+        int clickcountbezier = 2;
 
         private Polyline? currentPolyline = null;
         private bool isDrawingPencil = false;
         private Brush currentColor = Brushes.Black;
         private double currentThickness = 2;
-        SolidColorBrush currcolor = Brushes.Black;
-        int clickcountbezier = 2;
         public string CurrentFilePath { get; set; }
 
         // --- Logic Zoom ---
@@ -69,9 +69,10 @@ namespace Paint
             currentcolor.Color += (color) =>
             {
                 currcolor = color;
+                currentColor = color;
             };
 
-            SimpleTools.ToolSelected += (tool) =>
+            SimpleToolsRef.ToolSelected += (tool) =>
             {
                 selectedshape = tool;
             };
@@ -160,7 +161,8 @@ namespace Paint
 
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            startpoint = e.GetPosition(PaintSurface); // Đã sửa lỗi khai báo biến cục bộ
+            startpoint = e.GetPosition(PaintSurface);
+
             if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
