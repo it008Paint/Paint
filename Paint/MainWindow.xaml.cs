@@ -182,20 +182,34 @@ namespace Paint
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (drawshape == null) return;
-            Point secondpoint = e.GetPosition(PaintSurface);
-            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
+            Point currentPoint = e.GetPosition(PaintSurface);
+
+            // --- Nếu đang vẽ Pencil ---
+            if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
             {
-                setposition(secondpoint);
+                currentPolyline?.Points.Add(currentPoint);
+                return;
+            }
+
+            // --- Nếu đang vẽ hình khác ---
+            if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+            {
+                setposition(currentPoint);
             }
         }
 
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (drawshape is Path && clickcountbezier==2||drawshape is not Path)
+            if (isDrawingPencil)
+            {
+                isDrawingPencil = false;
+                currentPolyline = null;
+            }
+
+            if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
             {
                 drawshape = null;
-            }  
+            }
         }
 
         private void createshape(Point startpoint)
