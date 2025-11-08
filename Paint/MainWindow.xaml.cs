@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -28,6 +28,8 @@ namespace Paint
         Point startpoint;
         string? selectedshape = null;
         Shape? drawshape = null;
+        SolidColorBrush currcolor = Brushes.Black;
+        int clickcountbezier = 2;
 
         private Polyline? currentPolyline = null;
         private bool isDrawingPencil = false;
@@ -67,9 +69,10 @@ namespace Paint
             currentcolor.Color += (color) =>
             {
                 currcolor = color;
+                currentColor = color;
             };
 
-            SimpleTools.ToolSelected += (tool) =>
+            SimpleToolsRef.ToolSelected += (tool) =>
             {
                 selectedshape = tool;
             };
@@ -158,7 +161,8 @@ namespace Paint
 
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            startpoint = e.GetPosition(PaintSurface); // Đã sửa lỗi khai báo biến cục bộ
+            startpoint = e.GetPosition(PaintSurface);
+
             if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
