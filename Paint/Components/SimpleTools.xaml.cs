@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +20,16 @@ namespace Paint.Components
     /// </summary>
     public partial class SimpleTools : UserControl
     {
+        public event Action<string>? ToolSelected;
+
         public SimpleTools()
         {
             InitializeComponent();
+        }
+
+        private void PencilButton_Click(object sender, RoutedEventArgs e)
+        {
+            ToolSelected?.Invoke("Pencil");
         }
     }
 }
