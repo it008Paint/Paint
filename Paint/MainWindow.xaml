@@ -26,7 +26,7 @@
                 <ColumnDefinition Width="1.5*"/>
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="2.5*"/>
-                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="5*"/>
             </Grid.ColumnDefinitions>
 
@@ -36,6 +36,17 @@
             <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <!-- Colors -->
             <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <!-- thickness -->
+            <Grid  Grid.Column="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="thicknesstextblock" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="15" 
+                           Text="{Binding Value,ElementName=thicknessslider, StringFormat='{}{0:F1}'}"></TextBlock>
+                <Slider x:Name="thicknessslider" VerticalAlignment="Bottom" Maximum="50" Minimum="1"></Slider>
+            </Grid>
             <!-- Nâng cao -->
             <Grid Grid.Column="3">
 
