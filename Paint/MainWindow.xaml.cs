@@ -169,7 +169,7 @@ namespace Paint
                 currentPolyline = new Polyline
                 {
                     Stroke = currentColor,
-                    StrokeThickness = currentThickness,
+                    StrokeThickness = double.Parse(thicknesstextblock.Text),
                     Points = new PointCollection { startpoint }
                 };
                 PaintSurface.Children.Add(currentPolyline);
@@ -264,20 +264,11 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                try
-                {
-
-                    drawshape.StrokeThickness = double.Parse(thicknesstextblock.Text);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
+                drawshape.StrokeThickness = double.Parse(thicknesstextblock.Text);
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
         }
-
         private void setposition(Point secondpoint)
         {
             double x, y, w, h;
