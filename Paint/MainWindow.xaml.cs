@@ -268,6 +268,7 @@ namespace Paint
             {
                 drawshape.Stroke = currcolor;
                 drawshape.StrokeThickness = thicknessslider.Value;
+                drawshape.StrokeThickness = 3;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }

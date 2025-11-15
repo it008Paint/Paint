@@ -56,30 +56,9 @@ namespace Paint
             public string? Fill;
             public double StrokeThickness;
         }
-        public class TriangleElement : ElementData
+        public class PolygonElement : ElementData
         {
-            public List<System.Drawing.Point>? Point;
-            public string? Stroke;
-            public string? Fill;
-            public double StrokeThickness;
-        }
-        public class DiamondElement : ElementData
-        {
-            public List<System.Drawing.Point>? Point;
-            public string? Stroke;
-            public string? Fill;
-            public double StrokeThickness;
-        }
-        public class StarElement : ElementData
-        {
-            public List<System.Drawing.Point>? Point;
-            public string? Stroke;
-            public string? Fill;
-            public double StrokeThickness;
-        }
-        public class ArrowElement : ElementData
-        {
-            public double StartX,StartY,EndX,EndY;
+            public PointCollection? Points;
             public string? Stroke;
             public string? Fill;
             public double StrokeThickness;
@@ -123,7 +102,7 @@ namespace Paint
                             Width = ellipse.Width,
                             Height = ellipse.Height,
                             Stroke = (ellipse.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            Fill = (ellipse.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                            Fill = (ellipse.Fill as SolidColorBrush)?.Color.ToString() ?? "1",
                             StrokeThickness = ellipse.StrokeThickness
                         });
                         break;
@@ -132,13 +111,26 @@ namespace Paint
                         data.Elements.Add(new RectangleElement
                         {
                             Type = "Rectangle",
-                            //list point
+                            Width = rectangle.Width,
+                            Height = rectangle.Height,
+                            Top = Canvas.GetTop(rectangle),
+                            Left = Canvas.GetLeft(rectangle),
                             Stroke = (rectangle.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
                             Fill = (rectangle.Fill as SolidColorBrush)?.Color.ToString() ?? "",
                             StrokeThickness = rectangle.StrokeThickness
                         });
                         break;
 
+                    case Polygon polygon:
+                        data.Elements.Add(new PolygonElement
+                        {
+                            Type = "Polygon",
+                            Points = polygon.Points,
+                            Stroke = (polygon.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            Fill = (polygon.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = polygon.StrokeThickness
+                        });
+                        break;
                     case System.Windows.Controls.Image image when image.Source is BitmapSource bitmap:
                         data.Elements.Add(new ImageElement
                         {
@@ -183,7 +175,7 @@ namespace Paint
                             X2 = lineData.X2,
                             Y1 = lineData.Y1,
                             Y2 = lineData.Y2,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(lineData.Stroke) ?? "Black"),
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(lineData.Stroke) ?? ""),
                             StrokeThickness = lineData.StrokeThickness
                         };
                         canvas.Children.Add(newline);
@@ -208,7 +200,7 @@ namespace Paint
                         {
                             Width = elData.Width,
                             Height = elData.Height,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Stroke) ?? "Black"),
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Stroke) ?? ""),
                             Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Fill) ?? ""),
                             StrokeThickness = elData.StrokeThickness
                         };
@@ -217,6 +209,32 @@ namespace Paint
                         canvas.Children.Add(newellipse);
                         break;
 
+                    case "Rectangle":
+                        var recData = e.ToObject<RectangleElement>();
+                        var newRect = new System.Windows.Shapes.Rectangle
+                        {
+                            Width = recData.Width,
+                            Height = recData.Height,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Stroke) ?? ""),
+                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Fill) ?? ""),
+                            StrokeThickness = recData.StrokeThickness
+                        };
+                        Canvas.SetLeft(newRect, recData.Left);
+                        Canvas.SetTop(newRect, recData.Top);
+                        canvas.Children.Add(newRect);
+                        break;
+
+                    case "Polygon":
+                        var polData = e.ToObject<PolygonElement>();
+                        var newPol = new Polygon
+                        {
+                            Points = polData.Points,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polData.Stroke) ?? ""),
+                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(polData.Fill) ?? ""),
+                            StrokeThickness = polData.StrokeThickness
+                        };
+                        canvas.Children.Add(newPol);
+                        break;
                     //////
                     default:
                         MessageBox.Show("nah");
