@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -30,6 +30,11 @@ namespace Paint
         Shape? drawshape = null;
         SolidColorBrush currcolor = Brushes.Black;
         int clickcountbezier = 2;
+
+        private Polyline? currentPolyline = null;
+        private bool isDrawingPencil = false;
+        private Brush currentColor = Brushes.Black;
+        private double currentThickness = 2;
         public string CurrentFilePath { get; set; }
 
         // --- Logic Zoom ---
@@ -64,6 +69,12 @@ namespace Paint
             currentcolor.Color += (color) =>
             {
                 currcolor = color;
+                currentColor = color;
+            };
+
+            SimpleToolsRef.ToolSelected += (tool) =>
+            {
+                selectedshape = tool;
             };
         }
 
@@ -151,25 +162,54 @@ namespace Paint
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface);
-            createshape(startpoint);
+
+            if (selectedshape == "Pencil")
+            {
+                isDrawingPencil = true;
+                currentPolyline = new Polyline
+                {
+                    Stroke = currentColor,
+                    StrokeThickness = double.Parse(thicknesstextblock.Text),
+                    Points = new PointCollection { startpoint }
+                };
+                PaintSurface.Children.Add(currentPolyline);
+            }
+            else
+            {
+                createshape(startpoint);
+            }
         }
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (drawshape == null) return;
-            Point secondpoint = e.GetPosition(PaintSurface);
-            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
+            Point currentPoint = e.GetPosition(PaintSurface);
+
+            // --- Nếu đang vẽ Pencil ---
+            if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
             {
-                setposition(secondpoint);
+                currentPolyline?.Points.Add(currentPoint);
+                return;
+            }
+
+            // --- Nếu đang vẽ hình khác ---
+            if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+            {
+                setposition(currentPoint);
             }
         }
 
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (drawshape is Path && clickcountbezier==2||drawshape is not Path)
+            if (isDrawingPencil)
+            {
+                isDrawingPencil = false;
+                currentPolyline = null;
+            }
+
+            if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
             {
                 drawshape = null;
-            }  
+            }
         }
 
         private void createshape(Point startpoint)
@@ -224,12 +264,11 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                drawshape.StrokeThickness = 3;
+                drawshape.StrokeThickness = double.Parse(thicknesstextblock.Text);
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
         }
-
         private void setposition(Point secondpoint)
         {
             double x, y, w, h;
