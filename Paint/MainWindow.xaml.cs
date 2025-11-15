@@ -169,9 +169,12 @@ namespace Paint
                 currentPolyline = new Polyline
                 {
                     Stroke = currentColor,
-                    StrokeThickness = currentThickness,
-                    Points = new PointCollection { startpoint }
+                    StrokeThickness = thicknessslider.Value,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    StrokeLineJoin = PenLineJoin.Round
                 };
+                currentPolyline.Points = new PointCollection { startpoint };
                 PaintSurface.Children.Add(currentPolyline);
             }
             else
@@ -184,11 +187,15 @@ namespace Paint
         {
             Point currentPoint = e.GetPosition(PaintSurface);
 
+            // --- Nếu đang vẽ Pencil ---
             if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
             {
                 currentPolyline?.Points.Add(currentPoint);
+                return;
             }
-            else if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+
+            // --- Nếu đang vẽ hình khác ---
+            if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
             {
                 setposition(currentPoint);
             }
@@ -201,7 +208,11 @@ namespace Paint
                 isDrawingPencil = false;
                 currentPolyline = null;
             }
-            drawshape = null;
+
+            if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
+            {
+                drawshape = null;
+            }
         }
 
         private void createshape(Point startpoint)
@@ -256,12 +267,11 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                drawshape.StrokeThickness = 3;
+                drawshape.StrokeThickness = thicknessslider.Value;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
         }
-
         private void setposition(Point secondpoint)
         {
             double x, y, w, h;
