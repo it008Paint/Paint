@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -169,9 +169,12 @@ namespace Paint
                 currentPolyline = new Polyline
                 {
                     Stroke = currentColor,
-                    StrokeThickness = double.Parse(thicknesstextblock.Text),
-                    Points = new PointCollection { startpoint }
+                    StrokeThickness = thicknessslider.Value,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    StrokeLineJoin = PenLineJoin.Round
                 };
+                currentPolyline.Points = new PointCollection { startpoint };
                 PaintSurface.Children.Add(currentPolyline);
             }
             else
@@ -264,7 +267,8 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                drawshape.StrokeThickness = double.Parse(thicknesstextblock.Text);
+                drawshape.StrokeThickness = thicknessslider.Value;
+                drawshape.StrokeThickness = 3;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
