@@ -25,5 +25,8 @@
         <Button BorderBrush="Transparent" Width="20" Margin="0,0,0,5" Click="Redo_Click">
             <fa:IconImage Icon="ArrowRotateRight"/>
         </Button>
+        <Button BorderBrush="Transparent" Width="20" Margin="0,0,0,5" Click="ClearCanvas_Click">
+            <fa:IconImage Icon="Trash"/>
+        </Button>
     </StackPanel>
 </UserControl>
