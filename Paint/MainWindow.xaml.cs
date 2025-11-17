@@ -166,7 +166,14 @@ namespace Paint
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface);
-
+            
+            if (selectedshape == "Fill")
+            {
+                Point p = e.GetPosition(PaintSurface);
+                FillColorAtPoint((int)p.X, (int)p.Y);
+                return;
+            }
+            
             if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
