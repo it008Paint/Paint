@@ -92,5 +92,15 @@ namespace Paint.Components
             if (MainWindowRef.Redo.TryPop(out action) == false) return;
             action.Invoke();
         }
+
+        private void ClearCanvas_Click(object sender, RoutedEventArgs e)
+        {
+            if (MainWindowRef == null) return;
+
+            MainWindowRef.PaintSurface.Children.Clear();
+
+            MainWindowRef.Undo.Clear();
+            MainWindowRef.Redo.Clear();
+        }
     }
 }
