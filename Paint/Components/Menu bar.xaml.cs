@@ -74,18 +74,23 @@ namespace Paint.Components
                 FileManager.ExportCanvasToPng(MainWindowRef.PaintSurface, dlg.FileName);
             }
         }
-
-        private void Print_Click(object sender, RoutedEventArgs e)
-        {
-            PrintDialog print = new PrintDialog();
-            if (print.ShowDialog() == true)
-            {
-
-            }
-        }
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void Undo_Click(object sender, RoutedEventArgs e)
+        {
+            Action action;
+            if (MainWindowRef.Undo.TryPop(out action) == false) return;
+            action.Invoke();
+        }
+
+        private void Redo_Click(object sender, RoutedEventArgs e)
+        {
+            Action action;
+            if (MainWindowRef.Redo.TryPop(out action) == false) return;
+            action.Invoke();
         }
     }
 }
