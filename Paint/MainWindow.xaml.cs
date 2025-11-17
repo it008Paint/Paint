@@ -267,7 +267,6 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                drawshape.StrokeThickness = thicknessslider.Value;
                 drawshape.StrokeThickness = 3;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
