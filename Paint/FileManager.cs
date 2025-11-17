@@ -36,12 +36,6 @@ namespace Paint
             public string? Stroke;
             public double StrokeThickness;
         }
-        public class CurveElement : ElementData
-        {
-            public List<System.Drawing.Point>? Point;
-            public string? Stroke;
-            public double StrokeThickness;
-        }
         public class EllipseElement : ElementData
         {
             public double Left, Top, Width, Height;
@@ -67,6 +61,18 @@ namespace Paint
         {
             public double Left, Top, Width, Height;
             public string? ImageBase64;
+        }
+        public class PolylineElement : ElementData
+        {
+            public PointCollection? Points;
+            public string? Stroke;
+            public double StrokeThickness;
+        }
+        public class CurveElement : ElementData
+        {
+            public System.Windows.Point StartPoint, Point1, Point2, Point3;
+            public string? Stroke;
+            public double StrokeThickness;
         }
         // ==== SAVE TO JSON ====
         public static void SaveCanvasToJson(Canvas canvas, string filePath)
@@ -131,6 +137,33 @@ namespace Paint
                             StrokeThickness = polygon.StrokeThickness
                         });
                         break;
+
+                    case Polyline polyline:
+                        data.Elements.Add(new PolylineElement
+                        {
+                            Type = "Polyline",
+                            Points = polyline.Points,
+                            Stroke = (polyline.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = polyline.StrokeThickness
+                        });
+                        break;
+
+                    case System.Windows.Shapes.Path path:
+                        var geo = path.Data as PathGeometry;
+                        var fig = geo.Figures.FirstOrDefault();
+                        var bez = fig.Segments.OfType<BezierSegment>().FirstOrDefault();
+                        data.Elements.Add(new CurveElement
+                        {
+                            Type = "Curve",
+                            StartPoint = fig.StartPoint,
+                            Point1 = bez.Point1,
+                            Point2 = bez.Point2,
+                            Point3 = bez.Point3,
+                            Stroke = (path.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                            StrokeThickness = path.StrokeThickness
+                        });
+                        break;
+
                     case System.Windows.Controls.Image image when image.Source is BitmapSource bitmap:
                         data.Elements.Add(new ImageElement
                         {
@@ -225,16 +258,48 @@ namespace Paint
                         break;
 
                     case "Polygon":
-                        var polData = e.ToObject<PolygonElement>();
-                        var newPol = new Polygon
+                        var polygonData = e.ToObject<PolygonElement>();
+                        var newPolygon = new Polygon
                         {
-                            Points = polData.Points,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polData.Stroke) ?? ""),
-                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(polData.Fill) ?? ""),
-                            StrokeThickness = polData.StrokeThickness
+                            Points = polygonData.Points,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Stroke) ?? ""),
+                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Fill) ?? ""),
+                            StrokeThickness = polygonData.StrokeThickness
                         };
-                        canvas.Children.Add(newPol);
+                        canvas.Children.Add(newPolygon);
                         break;
+
+                    case "Polyline":
+                        var polylineData = e.ToObject<PolylineElement>();
+                        var newPolyline = new Polyline
+                        {
+                            Points = polylineData.Points,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polylineData.Stroke) ?? ""),
+                            StrokeThickness = polylineData.StrokeThickness
+                        };
+                        canvas.Children.Add(newPolyline);
+                        break;
+
+                    case "Curve":
+                        var curveData = e.ToObject<CurveElement>();
+                        PathGeometry geo = new PathGeometry();
+                        PathFigure fig = new PathFigure();
+                        BezierSegment bez = new BezierSegment();
+                        fig.StartPoint = curveData.StartPoint;
+                        bez.Point1 = curveData.Point1;
+                        bez.Point2 = curveData.Point2;
+                        bez.Point3 = curveData.Point3;
+                        fig.Segments.Add(bez);
+                        geo.Figures.Add(fig);
+                        var newCurve = new System.Windows.Shapes.Path
+                        {
+                            Data = geo,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(curveData.Stroke) ?? ""),
+                            StrokeThickness = curveData.StrokeThickness
+                        };
+                        canvas.Children.Add(newCurve);
+                        break;
+
                     //////
                     default:
                         MessageBox.Show("nah");
@@ -272,8 +337,8 @@ namespace Paint
                 var img = new System.Windows.Controls.Image
                 {
                     Source = bitmap,
-                    Width = 1100,
-                    Height = 500
+                    Width = canvas.ActualWidth,
+                    Height = canvas.ActualHeight
                 };
                 Canvas.SetLeft(img, 0);
                 Canvas.SetTop(img, 0);

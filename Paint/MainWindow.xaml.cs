@@ -36,6 +36,8 @@ namespace Paint
         private Brush currentColor = Brushes.Black;
         private double currentThickness = 2;
         public string CurrentFilePath { get; set; }
+        public Stack<Action>? Undo { get; set; }
+        public Stack<Action>? Redo { get; set; }
 
         // --- Logic Zoom ---
         private ScaleTransform _zoomTransform;
@@ -61,6 +63,8 @@ namespace Paint
 
             // Khởi tạo logic Vẽ hình (Của bạn)
             MainMenu.MainWindowRef = this;
+            Undo = new Stack<Action>();
+            Redo = new Stack<Action>();
             currentshape.Shape += (text) =>
             {
                 selectedshape = text;
@@ -205,12 +209,27 @@ namespace Paint
         {
             if (isDrawingPencil)
             {
+                Shape shape = CloneShape(currentPolyline);
+                PaintSurface.Children.Remove(currentPolyline);
+                PaintSurface.Children.Add(shape);
+                UndoPush(shape);
+                Redo.Clear();
                 isDrawingPencil = false;
                 currentPolyline = null;
             }
 
             if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
             {
+                if (drawshape == null) return;
+                Shape shape = CloneShape(drawshape);
+                double left = Canvas.GetLeft(drawshape);
+                double top = Canvas.GetTop(drawshape);
+                PaintSurface.Children.Remove(drawshape);
+                PaintSurface.Children.Add(shape);
+                Canvas.SetLeft(shape, left);
+                Canvas.SetTop(shape, top);
+                UndoPush(shape);
+                Redo.Clear();
                 drawshape = null;
             }
         }
@@ -267,7 +286,7 @@ namespace Paint
             if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
-                drawshape.StrokeThickness = 3;
+                drawshape.StrokeThickness = thicknessslider.Value;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
             }
@@ -378,6 +397,94 @@ namespace Paint
             {
                 bez.Point2 = point;
             }
+        }
+        private Shape CloneShape(Shape x)
+        {
+            if (x is Line line)
+            {
+                Shape shape = new Line
+                {
+                    X1 = line.X1,
+                    Y1 = line.Y1,
+                    X2 = line.X2,
+                    Y2 = line.Y2,
+                    Stroke = line.Stroke,
+                    StrokeThickness = line.StrokeThickness
+                };
+                return shape;
+            }
+            else if(x is Ellipse ellipse)
+            {
+                Shape shape = new Ellipse
+                {
+                    Width = ellipse.Width,
+                    Height = ellipse.Height,
+                    Stroke = ellipse.Stroke,
+                    StrokeThickness = ellipse.StrokeThickness,
+                    Fill = ellipse.Fill
+                };
+                return shape;
+            }
+            else if (x is Rectangle rectangle)
+            {
+                Shape shape = new Rectangle
+                {
+                    Width = rectangle.Width,
+                    Height = rectangle.Height,
+                    Stroke = rectangle.Stroke,
+                    StrokeThickness = rectangle.StrokeThickness,
+                    Fill = rectangle.Fill
+                };
+                return shape;
+            }
+            else if (x is Polygon polygon)
+            {
+                Shape shape = new Polygon
+                {
+                    Points = polygon.Points,
+                    Stroke = polygon.Stroke,
+                    StrokeThickness = polygon.StrokeThickness,
+                    Fill = polygon.Fill
+                };
+                return shape;
+            }
+            else if (x is Polyline polyline)
+            {
+                Shape shape = new Polyline
+                {
+                    Points = polyline.Points,
+                    Stroke = polyline.Stroke,
+                    StrokeThickness = polyline.StrokeThickness
+                };
+                return shape;
+            }
+            else if (x is Path path)
+            {
+                Shape shape = new Path
+                {
+                    Data = path.Data,
+                    Stroke = path.Stroke,
+                    StrokeThickness = path.StrokeThickness
+                };
+                return shape;
+            }
+            return x;
+        }
+        private void UndoPush(Shape shape)
+        {
+            Undo.Push(() =>
+            {
+                double left = Canvas.GetLeft(shape);
+                double top = Canvas.GetTop(shape);
+                PaintSurface.Children.Remove(shape);
+                Redo.Push(() =>
+                {
+                    PaintSurface.Children.Add(shape);
+                    Canvas.SetLeft(shape, left);
+                    Canvas.SetTop(shape, top);
+                    UndoPush(shape);
+                });
+            });
         }
     }
 }
