@@ -234,6 +234,105 @@ namespace Paint
             }
         }
 
+        private void FillColorAtPoint(int x, int y)
+        {
+            int width = (int)PaintSurface.ActualWidth;
+            int height = (int)PaintSurface.ActualHeight;
+
+            if (width == 0 || height == 0)
+                return;
+
+            RenderTargetBitmap rtb = new RenderTargetBitmap(
+                width, height, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(PaintSurface);
+
+            WriteableBitmap wb = new WriteableBitmap(rtb);
+
+            Color newColor;
+            if (currentColor is SolidColorBrush brush)
+                newColor = brush.Color;
+            else
+                newColor = Colors.Black;
+
+            int stride = wb.PixelWidth * (wb.Format.BitsPerPixel / 8);
+            byte[] pixels = new byte[wb.PixelHeight * stride];
+            wb.CopyPixels(pixels, stride, 0);
+
+            int index = (y * stride) + (x * 4);
+            if (index < 0 || index >= pixels.Length)
+                return;
+
+            Color oldColor = Color.FromArgb(
+                pixels[index + 3],
+                pixels[index + 2],
+                pixels[index + 1],
+                pixels[index + 0]
+            );
+
+            if (oldColor == newColor)
+                return;
+
+            Queue<Point> q = new Queue<Point>();
+            q.Enqueue(new Point(x, y));
+
+            while (q.Count > 0)
+            {
+                Point pt = q.Dequeue();
+                int px = (int)pt.X;
+                int py = (int)pt.Y;
+
+                if (px < 0 || py < 0 || px >= width || py >= height)
+                    continue;
+
+                int idx = (py * stride) + (px * 4);
+                if (idx < 0 || idx >= pixels.Length)
+                    continue;
+
+                Color colorHere = Color.FromArgb(
+                    pixels[idx + 3],
+                    pixels[idx + 2],
+                    pixels[idx + 1],
+                    pixels[idx + 0]
+                );
+
+                if (colorHere != oldColor)
+                    continue;
+
+                pixels[idx + 0] = newColor.B;
+                pixels[idx + 1] = newColor.G;
+                pixels[idx + 2] = newColor.R;
+                pixels[idx + 3] = newColor.A;
+
+                q.Enqueue(new Point(px + 1, py));
+                q.Enqueue(new Point(px - 1, py));
+                q.Enqueue(new Point(px, py + 1));
+                q.Enqueue(new Point(px, py - 1));
+            }
+
+            wb.WritePixels(
+                new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight),
+                pixels, stride, 0);
+
+            System.Windows.Controls.Image img = new System.Windows.Controls.Image();
+            img.Source = wb;
+            PaintSurface.Children.Add(img);
+
+            UndoPushImage(img);
+        }
+
+        private void UndoPushImage(System.Windows.Controls.Image img)
+        {
+            Undo.Push(() =>
+            {
+                PaintSurface.Children.Remove(img);
+                Redo.Push(() =>
+                {
+                    PaintSurface.Children.Add(img);
+                    UndoPushImage(img);
+                });
+            });
+        }
+
         private void createshape(Point startpoint)
         {
             // Sử dụng using System.Windows.Shapes;
