@@ -22,7 +22,7 @@
             <fa:IconBlock Icon="Pencil"/>
         </Button>
 
-        <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool">
+        <Button x:Name="FillButton" Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool" Click="FillButton_Click">
             <fa:IconBlock Icon="FillDrip"/>
         </Button>
 
