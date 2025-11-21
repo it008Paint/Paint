@@ -72,6 +72,7 @@
                           PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
                           PreviewMouseMove="CanvasScrollViewer_MouseMove"
                           PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp">
+                   PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"
 
                 <!-- Canvas. Đặt kích thước cố định để Zoom và Scroll hoạt động -->
                 <Canvas Background="White" x:Name="PaintSurface"
