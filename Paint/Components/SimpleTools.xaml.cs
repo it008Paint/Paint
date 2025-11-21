@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,6 +34,11 @@ namespace Paint.Components
         private void FillButton_Click(object sender, RoutedEventArgs e)
         {
             ToolSelected?.Invoke("Fill");
+        }
+
+        private void TextButton_Click(object sender, RoutedEventArgs e)
+        {
+            ToolSelected?.Invoke("Text");
         }
     }
 }
