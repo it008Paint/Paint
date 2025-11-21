@@ -65,17 +65,15 @@
                 <ColumnDefinition Width="25*"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
+
             <ScrollViewer Grid.Row="1" Grid.Column="1" 
                           x:Name="CanvasScrollViewer"
                           VerticalScrollBarVisibility="Auto" 
                           HorizontalScrollBarVisibility="Auto"
                           PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
                           PreviewMouseMove="CanvasScrollViewer_MouseMove"
-                          PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp">
-                   PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel">
-
-                <!-- Canvas. Đặt kích thước cố định để Zoom và Scroll hoạt động -->
-                <Canvas Background="White" x:Name="PaintSurface"
+                          PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp"
+                          PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"> <Canvas Background="White" x:Name="PaintSurface"
                         Width="1500" Height="1000"
                         Mouse.MouseDown="canvas_MouseDown" 
                         Mouse.MouseMove="canvas_MouseMove" 
