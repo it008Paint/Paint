@@ -102,6 +102,16 @@
                 <fa:IconImage Icon="SearchPlus"/>
             </Button>
         </StackPanel>
+ <ScrollViewer Grid.Row="1" Grid.Column="1" 
+              x:Name="CanvasScrollViewer"
+              VerticalScrollBarVisibility="Auto" 
+              HorizontalScrollBarVisibility="Auto"
+              PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
+              PreviewMouseMove="CanvasScrollViewer_MouseMove"
+              PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp"
+              
+              PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"> <Canvas Background="White" x:Name="PaintSurface" ... />
+ </ScrollViewer>
      
     </Grid>
 </Window>
