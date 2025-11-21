@@ -692,5 +692,30 @@ namespace Paint
                 });
             });
         }
+      
+
+private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+{
+    if (Keyboard.Modifiers == ModifierKeys.Control)
+    {
+        e.Handled = true;
+        Point mousePos = e.GetPosition(PaintSurface);
+        Point mouseView = e.GetPosition(CanvasScrollViewer);
+        double zoomFactor = 0.1; 
+        if (e.Delta < 0)
+        {
+            zoomFactor = -0.1;
+        }
+        double newScale = ZoomSlider.Value + zoomFactor;
+        newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
+        if (newScale == ZoomSlider.Value) return;
+        ZoomSlider.Value = newScale;
+        double newOffsetX = (mousePos.X * newScale) - mouseView.X;
+        double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
+
+        CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
+        CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
+    }
+}
     }
 }
