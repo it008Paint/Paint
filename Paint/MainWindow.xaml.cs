@@ -33,6 +33,7 @@ namespace Paint
         SolidColorBrush currcolor = Brushes.Black;
         int clickcountbezier = 2;
         int iserasing = 0;
+        private GeometryGroup? group = null;
 
         private Polyline? currentPolyline = null;
         private bool isDrawingPencil = false;
@@ -181,6 +182,14 @@ namespace Paint
             if (selectedshape == "Eraser")
             {
                 iserasing = 1;
+                group = new GeometryGroup();
+                drawshape = new Path
+                {
+                    Data = group,
+                    Stroke = Brushes.White,
+                    StrokeThickness = thicknessslider.Value
+                };
+                PaintSurface.Children.Add(drawshape);
                 draweraser(startpoint);
                 return;
             }
@@ -248,7 +257,18 @@ namespace Paint
             }
             if (iserasing == 1)
             {
+                if(drawshape == null) return;
+                Shape shape = CloneShape(drawshape);
+                double left = Canvas.GetLeft(drawshape);
+                double top = Canvas.GetTop(drawshape);
+                PaintSurface.Children.Remove(drawshape);
+                PaintSurface.Children.Add(shape);
+                Canvas.SetLeft(shape, left);
+                Canvas.SetTop(shape, top);
+                UndoPush(shape);
+                Redo.Clear();
                 iserasing = 0;
+                drawshape = null;
             }
             if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
             {
@@ -737,13 +757,11 @@ private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEvent
 }
         void draweraser(Point p)
         {
-            Rectangle rec = new Rectangle();
-            rec.Fill = Brushes.White;
-            rec.Width = thicknessslider.Value*2;
-            rec.Height = thicknessslider.Value*2;
-            Canvas.SetLeft(rec, p.X - 15);
-            Canvas.SetTop(rec, p.Y - 15);
-            PaintSurface.Children.Add(rec);
+            double size = thicknessslider.Value;
+            var eraserGeom = new RectangleGeometry(
+                new Rect(p.X - size / 2, p.Y - size / 2, size, size)
+            );
+            group.Children.Add(eraserGeom);
         }
     }
 }
