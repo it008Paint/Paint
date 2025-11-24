@@ -35,5 +35,10 @@ namespace Paint.Components
         {
             ToolSelected?.Invoke("Fill");
         }
+
+        private void Eraser_Click(object sender, RoutedEventArgs e)
+        {
+            ToolSelected?.Invoke("Eraser");
+        }
     }
 }

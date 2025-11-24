@@ -30,6 +30,7 @@ namespace Paint
         Shape? drawshape = null;
         SolidColorBrush currcolor = Brushes.Black;
         int clickcountbezier = 2;
+        int iserasing = 0;
 
         private Polyline? currentPolyline = null;
         private bool isDrawingPencil = false;
@@ -173,8 +174,12 @@ namespace Paint
                 FillColorAtPoint((int)p.X, (int)p.Y);
                 return;
             }
-            
-            if (selectedshape == "Pencil")
+            else if (selectedshape == "Eraser")
+            {
+                iserasing = 1;
+                draweraser(startpoint);
+            }
+            else if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
                 currentPolyline = new Polyline
@@ -204,7 +209,10 @@ namespace Paint
                 currentPolyline?.Points.Add(currentPoint);
                 return;
             }
-
+            if (iserasing == 1 && e.LeftButton == MouseButtonState.Pressed)
+            {
+                draweraser(currentPoint);
+            }
             // --- Nếu đang vẽ hình khác ---
             if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -224,7 +232,10 @@ namespace Paint
                 isDrawingPencil = false;
                 currentPolyline = null;
             }
-
+            if (iserasing == 1)
+            {
+                iserasing = 0;
+            }
             if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
             {
                 if (drawshape == null) return;
@@ -352,11 +363,15 @@ namespace Paint
                     break;
 
                 case "Square":
-                    drawshape = new Rectangle();
+                    drawshape = new Rectangle{Width = 0, Height=0};
+                    Canvas.SetLeft(drawshape, startpoint.X);
+                    Canvas.SetTop(drawshape, startpoint.Y);
                     break;
 
                 case "Circle":
-                    drawshape = new Ellipse();
+                    drawshape = new Ellipse { Width = 0, Height = 0 };
+                    Canvas.SetLeft(drawshape, startpoint.X);
+                    Canvas.SetTop(drawshape, startpoint.Y);
                     break;
 
                 case "Wavesquare":
@@ -591,6 +606,16 @@ namespace Paint
                     UndoPush(shape);
                 });
             });
+        }
+        void draweraser(Point p)
+        {
+            Rectangle rec = new Rectangle();
+            rec.Fill = Brushes.White;
+            rec.Width = thicknessslider.Value*2;
+            rec.Height = thicknessslider.Value*2;
+            Canvas.SetLeft(rec, p.X - 15);
+            Canvas.SetTop(rec, p.Y - 15);
+            PaintSurface.Children.Add(rec);
         }
     }
 }

@@ -30,11 +30,11 @@
             <fa:IconBlock Icon="Font"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="0" Width="30" Height="30" ToolTip="Eraser Tool">
+        <Button x:Name="Eraser" Grid.Row="1" Grid.Column="0" Width="30" Height="30" ToolTip="Eraser Tool" Click="Eraser_Click">
             <fa:IconBlock Icon="Eraser"/>
         </Button>
 
-        <Button Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Color Picker">
+        <Button  Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Color Picker">
             <fa:IconBlock Icon="Eyedropper"/>
         </Button>
 
