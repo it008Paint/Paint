@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
@@ -13,7 +13,9 @@ using System.Windows.Shapes;
 using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics; 
 using System.Numerics; 
-using System.Windows.Ink; 
+using System.Windows.Ink;
+using System.Windows.Controls.Primitives;
+
 using System.Windows.Media.Animation;
 //using System.Drawing;
 
@@ -36,6 +38,8 @@ namespace Paint
         private bool isDrawingPencil = false;
         private Brush currentColor = Brushes.Black;
         private double currentThickness = 2;
+
+        private TextBox? currentTextBox = null;
         public string CurrentFilePath { get; set; }
         public Stack<Action>? Undo { get; set; }
         public Stack<Action>? Redo { get; set; }
@@ -174,12 +178,21 @@ namespace Paint
                 FillColorAtPoint((int)p.X, (int)p.Y);
                 return;
             }
-            else if (selectedshape == "Eraser")
+            if (selectedshape == "Eraser")
             {
                 iserasing = 1;
                 draweraser(startpoint);
+                return;
             }
-            else if (selectedshape == "Pencil")
+
+            if (selectedshape == "Text")
+            {
+                AddTextBoxAtPoint(startpoint);
+                return;
+            }
+
+            
+            if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
                 currentPolyline = new Polyline
@@ -212,6 +225,7 @@ namespace Paint
             if (iserasing == 1 && e.LeftButton == MouseButtonState.Pressed)
             {
                 draweraser(currentPoint);
+                return;
             }
             // --- Nếu đang vẽ hình khác ---
             if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
@@ -591,22 +605,136 @@ namespace Paint
             }
             return x;
         }
-        private void UndoPush(Shape shape)
+
+        private void AddTextBoxAtPoint(Point position)
         {
+            if (currentTextBox != null)
+                return;
+
+            currentTextBox = new TextBox
+            {
+                Width = 150,
+                Height = 30,
+                FontSize = 16,
+                Background = Brushes.Transparent,
+                Foreground = currentColor,                BorderBrush = Brushes.Gray,
+                BorderThickness = new Thickness(1),
+                AcceptsReturn = true
+            };
+
+            Canvas.SetLeft(currentTextBox, position.X);
+            Canvas.SetTop(currentTextBox, position.Y);
+
+            PaintSurface.Children.Add(currentTextBox);
+            currentTextBox.Focus();
+
+            // Tạo Thumb để resize
+            Thumb resizeThumb = new Thumb
+            {
+                Width = 10,
+                Height = 10,
+                Background = Brushes.Gray,
+                Cursor = Cursors.SizeNWSE
+            };
+            Canvas.SetLeft(resizeThumb, position.X + currentTextBox.Width - 5);
+            Canvas.SetTop(resizeThumb, position.Y + currentTextBox.Height - 5);
+            PaintSurface.Children.Add(resizeThumb);
+
+            resizeThumb.DragDelta += (s, e) =>
+            {
+                currentTextBox.Width = Math.Max(30, currentTextBox.Width + e.HorizontalChange);
+                currentTextBox.Height = Math.Max(20, currentTextBox.Height + e.VerticalChange);
+
+                Canvas.SetLeft(resizeThumb, Canvas.GetLeft(currentTextBox) + currentTextBox.Width - resizeThumb.Width / 2);
+                Canvas.SetTop(resizeThumb, Canvas.GetTop(currentTextBox) + currentTextBox.Height - resizeThumb.Height / 2);
+            };
+
+            currentTextBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Enter)
+                {
+                    FinalizeTextBox();
+                    PaintSurface.Children.Remove(resizeThumb);
+                    e.Handled = true;
+                }
+            };
+        }
+
+        private void FinalizeTextBox()
+        {
+            if (currentTextBox == null)
+                return;
+
+            string text = currentTextBox.Text;
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                TextBlock tb = new TextBlock
+                {
+                    Text = text,
+                    FontSize = currentTextBox.FontSize,
+                    Foreground = currentColor
+                };
+
+                double left = Canvas.GetLeft(currentTextBox);
+                double top = Canvas.GetTop(currentTextBox);
+
+                PaintSurface.Children.Remove(currentTextBox);
+                PaintSurface.Children.Add(tb);
+                Canvas.SetLeft(tb, left);
+                Canvas.SetTop(tb, top);
+
+                UndoPush(tb);
+            }
+            else
+            {
+                PaintSurface.Children.Remove(currentTextBox);
+            }
+
+            currentTextBox = null;
+        }
+
+        private void UndoPush(UIElement element)
+        {
+            double left = Canvas.GetLeft(element);
+            double top = Canvas.GetTop(element);
+
             Undo.Push(() =>
             {
-                double left = Canvas.GetLeft(shape);
-                double top = Canvas.GetTop(shape);
-                PaintSurface.Children.Remove(shape);
+                PaintSurface.Children.Remove(element);
                 Redo.Push(() =>
                 {
-                    PaintSurface.Children.Add(shape);
-                    Canvas.SetLeft(shape, left);
-                    Canvas.SetTop(shape, top);
-                    UndoPush(shape);
+                    PaintSurface.Children.Add(element);
+                    Canvas.SetLeft(element, left);
+                    Canvas.SetTop(element, top);
+                    UndoPush(element);
                 });
             });
         }
+      
+
+private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+{
+    if (Keyboard.Modifiers == ModifierKeys.Control)
+    {
+        e.Handled = true;
+        Point mousePos = e.GetPosition(PaintSurface);
+        Point mouseView = e.GetPosition(CanvasScrollViewer);
+        double zoomFactor = 0.1; 
+        if (e.Delta < 0)
+        {
+            zoomFactor = -0.1;
+        }
+        double newScale = ZoomSlider.Value + zoomFactor;
+        newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
+        if (newScale == ZoomSlider.Value) return;
+        ZoomSlider.Value = newScale;
+        double newOffsetX = (mousePos.X * newScale) - mouseView.X;
+        double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
+
+        CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
+        CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
+    }
+}
         void draweraser(Point p)
         {
             Rectangle rec = new Rectangle();
