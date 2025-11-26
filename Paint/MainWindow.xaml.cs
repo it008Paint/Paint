@@ -609,7 +609,10 @@ namespace Paint
                 {
                     Points = polyline.Points,
                     Stroke = polyline.Stroke,
-                    StrokeThickness = polyline.StrokeThickness
+                    StrokeThickness = polyline.StrokeThickness,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    StrokeLineJoin = PenLineJoin.Round
                 };
                 return shape;
             }
