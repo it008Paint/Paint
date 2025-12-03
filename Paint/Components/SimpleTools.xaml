@@ -5,10 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              xmlns:local="clr-namespace:Paint.Components"
-             mc:Ignorable="d" Height="80" Width="120">
+             mc:Ignorable="d" Height="80" Width="80">
     <Grid x:Name="tool">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="40"/>
         </Grid.ColumnDefinitions>
@@ -22,7 +21,7 @@
             <fa:IconBlock Icon="Pencil"/>
         </Button>
 
-        <Button x:Name="FillButton" Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool" Click="FillButton_Click">
+        <Button x:Name="FillButton" Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Fill Tool" Click="FillButton_Click">
             <fa:IconBlock Icon="FillDrip"/>
         </Button>
 
@@ -34,13 +33,6 @@
             <fa:IconBlock Icon="Eraser"/>
         </Button>
 
-        <Button  Grid.Row="1" Grid.Column="1" Width="30" Height="30" ToolTip="Color Picker">
-            <fa:IconBlock Icon="Eyedropper"/>
-        </Button>
-
-        <Button Grid.Row="1" Grid.Column="2" Width="30" Height="30" ToolTip="Zoom In">
-            <fa:IconBlock Icon="SearchPlus"/>
-        </Button>
-        <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
     </Grid>
 </UserControl>
