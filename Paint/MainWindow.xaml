@@ -23,19 +23,19 @@
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.5*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="2.5*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="148*"/>
+                <ColumnDefinition Width="197*"/>
+                <ColumnDefinition Width="279*"/>
+                <ColumnDefinition Width="164*"/>
+                <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Tool -->
-            <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="80"/>
             <!-- Shapes -->
-            <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="81" Width="160"/>
             <!-- Colors -->
-            <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="260"/>
             <!-- thickness -->
             <Grid  Grid.Column="3">
                 <Grid.RowDefinitions>
@@ -73,7 +73,8 @@
                           PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
                           PreviewMouseMove="CanvasScrollViewer_MouseMove"
                           PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp"
-                          PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel"> <Canvas Background="White" x:Name="PaintSurface"
+                          PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel">
+                <Canvas Background="White" x:Name="PaintSurface"
                         Width="1500" Height="1000"
                         Mouse.MouseDown="canvas_MouseDown" 
                         Mouse.MouseMove="canvas_MouseMove" 
@@ -100,6 +101,6 @@
             <Button x:Name="ZoomInButton" Width="20" Height="20" Margin="0,0,30,0">
                 <fa:IconImage Icon="SearchPlus"/>
             </Button>
-        </StackPanel>     
+        </StackPanel>
     </Grid>
 </Window>
