@@ -6,7 +6,7 @@
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              xmlns:local="clr-namespace:Paint.Components"
              mc:Ignorable="d" Height="80" Width="120">
-    <Grid>
+    <Grid x:Name="tool">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="40"/>

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -19,7 +20,7 @@ namespace Paint.Components
     /// <summary>
     /// Interaction logic for Menu_bar.xaml
     /// </summary>
-    public partial class Menu_bar : UserControl
+    public partial class Menu_bar : System.Windows.Controls.UserControl
     {
         public MainWindow MainWindowRef { get; set; }
         public Menu_bar()
@@ -30,17 +31,33 @@ namespace Paint.Components
         private void New_Click(object sender, RoutedEventArgs e)
         {
             if (MainWindowRef.CurrentFilePath != null)
-                FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+            {
+                if (MainWindowRef.Undo.Count != 0)
+                {
+                    MessageBoxResult result = System.Windows.MessageBox.Show(
+                        "Do you want to save?","",MessageBoxButton.YesNo   
+                    );
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+                    }
+                }
+            }
+                
             MainWindowRef.PaintSurface.Children.Clear();
             MainWindowRef.CurrentFilePath = null;
+            MainWindowRef.Undo.Clear();
+            MainWindowRef.Redo.Clear();
         }
         private void Open_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog { Filter = "Paint project (*.json)|*.json" };
+            var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Paint project (*.json)|*.json" };
             if (dlg.ShowDialog() == true)
             {
                 FileManager.LoadCanvasFromJson(MainWindowRef.PaintSurface, dlg.FileName);
                 MainWindowRef.CurrentFilePath = dlg.FileName;
+                MainWindowRef.Undo.Clear();
+                MainWindowRef.Redo.Clear();
             }
         }
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -54,7 +71,7 @@ namespace Paint.Components
         }
         private void SaveAs_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new SaveFileDialog { Filter = "Paint project (*.json)|*.json" };
+            var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "Paint project (*.json)|*.json" };
             if (dlg.ShowDialog() == true)
             {
                 FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, dlg.FileName);
@@ -68,7 +85,11 @@ namespace Paint.Components
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new SaveFileDialog { Filter = "PNG image (*.png)|*.png|JPEG image (*.jpeg)|*.jpeg" };
+            MainWindowRef.CanvasScrollViewer.ScrollToHorizontalOffset(0);
+            MainWindowRef.CanvasScrollViewer.ScrollToVerticalOffset(0);
+            MainWindowRef.ZoomPreset.SelectedIndex = 1;
+            MainWindowRef.ZoomPreset.SelectedIndex = 3;
+            var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "PNG image (*.png)|*.png|JPEG image (*.jpeg)|*.jpeg" };
             if (dlg.ShowDialog() == true)
             {
                 FileManager.ExportCanvasToPng(MainWindowRef.PaintSurface, dlg.FileName);
@@ -76,7 +97,7 @@ namespace Paint.Components
         }
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void Undo_Click(object sender, RoutedEventArgs e)
