@@ -41,6 +41,11 @@ namespace Paint
         private bool isDrawingPencil = false;
         private Brush currentColor = Brushes.Black;
         private double currentThickness = 2;
+        private UIElement? _selectedElement = null;     
+        private Point _selectionStartPoint;             
+        private bool _isDragging = false;              
+        private Point _originalElementPosition;         
+        private Border? _selectionBorder = null;
 
         private TextBox? currentTextBox = null;
         public string CurrentFilePath { get; set; }
@@ -92,6 +97,20 @@ namespace Paint
                 selectedshape = tool;
             };
 
+            SimpleToolsRef.ToolSelected += (tool) =>
+            {
+                if (tool == "Selection")
+                {
+                    SetSelectionTool();
+                }
+                else
+                {
+                    selectedshape = tool;
+                    ToggleSelection(null);
+                }
+            };
+           
+
 
             Layer defaultLayer = new Layer("Layer 1");
             Layers.Add(defaultLayer);
@@ -99,6 +118,379 @@ namespace Paint
             LayersListBox.ItemsSource = Layers;
             LayersListBox.SelectedIndex = 0;
         }
+
+        // --- Logic Selection và Drag/Drop ---
+
+private void SetSelectionTool()
+{
+   
+    FinalizeTextBox(); 
+    selectedshape = "Selection";
+}
+
+private void ToggleSelection(UIElement? element, Point? clickPoint = null)
+{
+  
+    if (_selectedElement != null)
+    {
+      
+        if (_selectionBorder != null)
+        {
+            PaintSurface.Children.Remove(_selectionBorder);
+            _selectionBorder = null;
+        }
+        
+        
+        
+        _selectedElement = null;
+    }
+
+    
+    if (element != null)
+    {
+        _selectedElement = element;
+        ShowSelectionBorder(_selectedElement);
+        
+       
+        if (clickPoint.HasValue)
+        {
+            _selectionStartPoint = clickPoint.Value;
+            
+          
+            _originalElementPosition = new Point(Canvas.GetLeft(element), Canvas.GetTop(element));
+            
+     
+            if (element is Line line)
+            {
+                _originalElementPosition = new Point(line.X1, line.Y1);
+            }
+            else if (element is Path path && path.RenderTransform is TranslateTransform t)
+            {
+                _originalElementPosition = new Point(t.X, t.Y);
+            }
+            
+            if (double.IsNaN(_originalElementPosition.X)) _originalElementPosition.X = 0;
+            if (double.IsNaN(_originalElementPosition.Y)) _originalElementPosition.Y = 0;
+        }
+    }
+}
+
+private void ShowSelectionBorder(UIElement element)
+{
+
+    _selectionBorder = new Border
+    {
+        BorderBrush = Brushes.Blue,
+        BorderThickness = new Thickness(2),
+        CornerRadius = new CornerRadius(1),
+        IsHitTestVisible = false 
+    };
+
+ 
+    Rect bounds = GetElementBounds(element);
+    
+    _selectionBorder.Width = bounds.Width;
+    _selectionBorder.Height = bounds.Height;
+    Canvas.SetLeft(_selectionBorder, bounds.X);
+    Canvas.SetTop(_selectionBorder, bounds.Y);
+    
+   
+    int zIndex = Canvas.GetZIndex(element) + 1;
+    Canvas.SetZIndex(_selectionBorder, zIndex);
+    
+    PaintSurface.Children.Add(_selectionBorder);
+}
+
+
+private Rect GetElementBounds(UIElement element)/
+{
+    if (element is Line line)
+    {
+        double minX = Math.Min(line.X1, line.X2);
+        double minY = Math.Min(line.Y1, line.Y2);
+        double maxX = Math.Max(line.X1, line.X2);
+        double maxY = Math.Max(line.Y1, line.Y2);
+        double thickness = line.StrokeThickness / 2;
+        
+        return new Rect(minX - thickness, minY - thickness, maxX - minX + thickness * 2, maxY - minY + thickness * 2);
+    }
+    
+   
+    double left = Canvas.GetLeft(element);
+    double top = Canvas.GetTop(element);
+    
+   
+    if (double.IsNaN(left)) left = 0;
+    if (double.IsNaN(top)) top = 0;
+
+    double width = 0;
+    double height = 0;
+
+    if (element is FrameworkElement fe)
+    {
+        
+        fe.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        fe.Arrange(new Rect(fe.DesiredSize));
+        width = fe.ActualWidth;
+        height = fe.ActualHeight;
+        
+        
+        if (element is Path path && path.RenderTransform is TranslateTransform t)
+        {
+            left += t.X;
+            top += t.Y;
+        }
+    }
+    else if (element is Shape shape)
+    {
+        
+        width = shape.Width;
+        height = shape.Height;
+    }
+    
+    
+    if (width <= 0 || height <= 0 || double.IsNaN(width) || double.IsNaN(height))
+    {
+        Rect visualBounds = VisualTreeHelper.GetDescendantBounds(element);
+        width = visualBounds.Width;
+        height = visualBounds.Height;
+        left += visualBounds.X;
+        top += visualBounds.Y;
+    }
+
+    return new Rect(left, top, width, height);
+}
+
+private void MoveSelectedElement(Point newPoint)
+{
+    if (_selectedElement == null) return;
+
+   
+    double offsetX = newPoint.X - _selectionStartPoint.X;
+    double offsetY = newPoint.Y - _selectionStartPoint.Y;
+
+   
+    if (_selectedElement is Line line)
+    {
+        line.X1 += offsetX;
+        line.Y1 += offsetY;
+        line.X2 += offsetX;
+        line.Y2 += offsetY;
+        
+        
+        ShowSelectionBorder(line); 
+    }
+    else if (_selectedElement is Path path)
+    {
+       
+         TranslateTransform? transform = path.RenderTransform as TranslateTransform;
+         if (transform == null || transform == Transform.Identity)
+         {
+             transform = new TranslateTransform();
+             path.RenderTransform = transform;
+             path.RenderTransformOrigin = new Point(0, 0); 
+         }
+         transform.X += offsetX;
+         transform.Y += offsetY;
+         
+        
+         if (_selectionBorder != null)
+         {
+             double currentLeft = Canvas.GetLeft(_selectionBorder);
+             double currentTop = Canvas.GetTop(_selectionBorder);
+             Canvas.SetLeft(_selectionBorder, currentLeft + offsetX);
+             Canvas.SetTop(_selectionBorder, currentTop + offsetY);
+         }
+    }
+    else 
+    {
+        double currentLeft = Canvas.GetLeft(_selectedElement);
+        double currentTop = Canvas.GetTop(_selectedElement);
+        
+       
+        if (double.IsNaN(currentLeft)) currentLeft = 0;
+        if (double.IsNaN(currentTop)) currentTop = 0;
+
+        Canvas.SetLeft(_selectedElement, currentLeft + offsetX);
+        Canvas.SetTop(_selectedElement, currentTop + offsetY);
+        
+        
+        if (_selectionBorder != null)
+        {
+            Canvas.SetLeft(_selectionBorder, currentLeft + offsetX);
+            Canvas.SetTop(_selectionBorder, currentTop + offsetY);
+        }
+    }
+
+   
+    _selectionStartPoint = newPoint;
+}
+
+
+private void CommitMovement(UIElement element)
+{
+    
+    double finalLeft = Canvas.GetLeft(element);
+    double finalTop = Canvas.GetTop(element);
+
+    
+    double originalLeft = _originalElementPosition.X;
+    double originalTop = _originalElementPosition.Y;
+    
+   
+    double totalOffsetX = finalLeft - originalLeft;
+    double totalOffsetY = finalTop - originalTop;
+    
+   
+    if (element is Line line)
+    {
+        totalOffsetX = line.X1 - originalLeft;
+        totalOffsetY = line.Y1 - originalTop;
+    }
+    else if (element is Path path && path.RenderTransform is TranslateTransform t)
+    {
+        totalOffsetX = t.X - originalLeft;
+        totalOffsetY = t.Y - originalTop;
+        originalLeft = 0;
+        originalTop = 0;
+    }
+
+    
+    if (Math.Abs(totalOffsetX) > 0.5 || Math.Abs(totalOffsetY) > 0.5)
+    {
+        Action undoAction = () =>
+        {
+           
+            if (element is Line lineToUndo)
+            {
+                lineToUndo.X1 -= totalOffsetX;
+                lineToUndo.Y1 -= totalOffsetY;
+                lineToUndo.X2 -= totalOffsetX;
+                lineToUndo.Y2 -= totalOffsetY;
+                ShowSelectionBorder(lineToUndo);
+            }
+            else if (element is Path pathToUndo && pathToUndo.RenderTransform is TranslateTransform tUndo)
+            {
+                tUndo.X -= totalOffsetX;
+                tUndo.Y -= totalOffsetY;
+                ShowSelectionBorder(pathToUndo);
+            }
+            else
+            {
+                Canvas.SetLeft(element, originalLeft);
+                Canvas.SetTop(element, originalTop);
+                ShowSelectionBorder(element);
+            }
+
+
+            Redo.Push(() =>
+            {
+               
+                if (element is Line lineToRedo)
+                {
+                    lineToRedo.X1 += totalOffsetX;
+                    lineToRedo.Y1 += totalOffsetY;
+                    lineToRedo.X2 += totalOffsetX;
+                    lineToRedo.Y2 += totalOffsetY;
+                    ShowSelectionBorder(lineToRedo);
+                }
+                else if (element is Path pathToRedo && pathToRedo.RenderTransform is TranslateTransform tRedo)
+                {
+                    tRedo.X += totalOffsetX;
+                    tRedo.Y += totalOffsetY;
+                    ShowSelectionBorder(pathToRedo);
+                }
+                else
+                {
+                    Canvas.SetLeft(element, finalLeft);
+                    Canvas.SetTop(element, finalTop);
+                    ShowSelectionBorder(element);
+                }
+                CommitMovement(element);
+            });
+        };
+        
+        Undo?.Push(undoAction);
+        Redo?.Clear(); 
+    }
+}
+
+private void canvas_MouseMove(object sender, MouseEventArgs e)
+{
+    Point currentPoint = e.GetPosition(PaintSurface);
+
+   
+    if (_isDragging && _selectedElement != null)
+    {
+        MoveSelectedElement(currentPoint);
+        return;
+    }
+ 
+    if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
+    {
+       
+        return;
+    }
+   
+    if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+    {
+        setposition(currentPoint);
+    }
+}
+
+private void canvas_MouseMove(object sender, MouseEventArgs e)
+{
+    Point currentPoint = e.GetPosition(PaintSurface);
+
+    if (_isDragging && _selectedElement != null)
+    {
+        MoveSelectedElement(currentPoint);
+        return;
+    }
+   
+    if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
+    {
+        
+        return;
+    }
+   
+    if (drawshape != null && e.LeftButton == MouseButtonState.Pressed)
+    {
+        setposition(currentPoint);
+    }
+}
+
+private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
+{
+
+    if (_isDragging)
+    {
+        PaintSurface.ReleaseMouseCapture();
+        _isDragging = false;
+
+        if (_selectedElement != null)
+        {
+            
+        }
+        return;
+    }
+ 
+    if (isDrawingPencil)
+    {
+       
+    }
+   
+    if (iserasing == 1)
+    {
+        
+    }
+    
+    if (drawshape is Path && clickcountbezier == 2 || drawshape is not Path)
+    {
+       
+    }
+}
+
 
         // --- Logic Xử lý Zoom ---
 
