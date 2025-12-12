@@ -1,28 +1,30 @@
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics; 
 using System.Globalization;
+using System.Numerics; 
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static System.Net.Mime.MediaTypeNames;
-using System.Diagnostics; 
-using System.Numerics; 
-using System.Windows.Ink;
-using System.Windows.Controls.Primitives;
-
-using System.Windows.Media.Animation;
 //using System.Drawing;
 
 namespace Paint
 {
     /// <summary>
-   
+
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -53,6 +55,9 @@ namespace Paint
         // --- Logic Panning (Kéo chuột) ---
         private bool _isPanning = false;
         private Point _panStartPoint;
+
+        public ObservableCollection<Layer> Layers { get; set; } = new ObservableCollection<Layer>();
+        private Layer CurrentLayer;
         public MainWindow()
         {
             InitializeComponent();
@@ -86,6 +91,13 @@ namespace Paint
             {
                 selectedshape = tool;
             };
+
+
+            Layer defaultLayer = new Layer("Layer 1");
+            Layers.Add(defaultLayer);
+            CurrentLayer = defaultLayer;
+            LayersListBox.ItemsSource = Layers;
+            LayersListBox.SelectedIndex = 0;
         }
 
         // --- Logic Xử lý Zoom ---
@@ -172,7 +184,7 @@ namespace Paint
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface);
-            
+
             if (selectedshape == "Fill")
             {
                 Point p = e.GetPosition(PaintSurface);
@@ -190,6 +202,14 @@ namespace Paint
                     StrokeThickness = thicknessslider.Value
                 };
                 PaintSurface.Children.Add(drawshape);
+
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(drawshape);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(drawshape, zIndex);
+                }
+
                 draweraser(startpoint);
                 return;
             }
@@ -200,7 +220,7 @@ namespace Paint
                 return;
             }
 
-            
+
             if (selectedshape == "Pencil")
             {
                 isDrawingPencil = true;
@@ -214,6 +234,13 @@ namespace Paint
                 };
                 currentPolyline.Points = new PointCollection { startpoint };
                 PaintSurface.Children.Add(currentPolyline);
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(currentPolyline);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(currentPolyline, zIndex);
+                }
+
             }
             else
             {
@@ -250,6 +277,14 @@ namespace Paint
                 Shape shape = CloneShape(currentPolyline);
                 PaintSurface.Children.Remove(currentPolyline);
                 PaintSurface.Children.Add(shape);
+
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(shape);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(shape, zIndex);
+                }
+
                 UndoPush(shape);
                 Redo.Clear();
                 isDrawingPencil = false;
@@ -257,7 +292,7 @@ namespace Paint
             }
             if (iserasing == 1)
             {
-                if(drawshape == null) return;
+                if (drawshape == null) return;
                 Shape shape = CloneShape(drawshape);
                 double left = Canvas.GetLeft(drawshape);
                 double top = Canvas.GetTop(drawshape);
@@ -265,6 +300,14 @@ namespace Paint
                 PaintSurface.Children.Add(shape);
                 Canvas.SetLeft(shape, left);
                 Canvas.SetTop(shape, top);
+
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(shape);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(shape, zIndex);
+                }
+
                 UndoPush(shape);
                 Redo.Clear();
                 iserasing = 0;
@@ -280,6 +323,14 @@ namespace Paint
                 PaintSurface.Children.Add(shape);
                 Canvas.SetLeft(shape, left);
                 Canvas.SetTop(shape, top);
+
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(shape);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(shape, zIndex);
+                }
+
                 UndoPush(shape);
                 Redo.Clear();
                 drawshape = null;
@@ -369,6 +420,13 @@ namespace Paint
             img.Source = wb;
             PaintSurface.Children.Add(img);
 
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(img);
+                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                Canvas.SetZIndex(img, zIndex);
+            }
+
             UndoPushImage(img);
         }
 
@@ -397,7 +455,7 @@ namespace Paint
                     break;
 
                 case "Square":
-                    drawshape = new Rectangle{Width = 0, Height=0};
+                    drawshape = new Rectangle { Width = 0, Height = 0 };
                     Canvas.SetLeft(drawshape, startpoint.X);
                     Canvas.SetTop(drawshape, startpoint.Y);
                     break;
@@ -422,7 +480,7 @@ namespace Paint
                     ((Polygon)drawshape).Points = new PointCollection();
                     break;
 
-                case "Diamond": 
+                case "Diamond":
                     drawshape = new Polygon();
                     ((Polygon)drawshape).Points = new PointCollection();
                     break;
@@ -438,14 +496,23 @@ namespace Paint
                     break;
             }
 
-            if (drawshape != null&&((drawshape is Path && clickcountbezier==0)||drawshape is not Path))
+            if (drawshape != null && ((drawshape is Path && clickcountbezier == 0) || drawshape is not Path))
             {
                 drawshape.Stroke = currcolor;
                 drawshape.StrokeThickness = thicknessslider.Value;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
+
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(drawshape);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(drawshape, zIndex);
+                }
             }
         }
+
+
         private void setposition(Point secondpoint)
         {
             double x, y, w, h;
@@ -489,7 +556,7 @@ namespace Paint
                         fig.Segments.Add(bez);
                         geo.Figures.Add(fig);
                         ((Path)drawshape).Data = geo;
-                    }else
+                    } else
                     {
                         bezierpoint(secondpoint, clickcountbezier);
                     }
@@ -498,7 +565,7 @@ namespace Paint
                 case "Play":
                     PointCollection point = new PointCollection();
                     point.Add(new Point(x, y));
-                    point.Add(new Point(x+w,y+h/2));
+                    point.Add(new Point(x + w, y + h / 2));
                     point.Add(new Point(x, y + h));
                     ((Polygon)drawshape).Points = point;
                     break;
@@ -508,7 +575,7 @@ namespace Paint
                     point1.Add(new Point(x, y));
                     point1.Add(new Point(x + w, y + h / 2));
                     point1.Add(new Point(x, y + h));
-                    point1.Add(new Point(x - w, y + h/2));
+                    point1.Add(new Point(x - w, y + h / 2));
                     ((Polygon)drawshape).Points = point1;
                     break;
 
@@ -539,7 +606,7 @@ namespace Paint
                     break;
             }
         }
-        private void bezierpoint(Point point,int clicknum)
+        private void bezierpoint(Point point, int clicknum)
         {
             PathGeometry geo = ((Path)drawshape).Data as PathGeometry;
             PathFigure fig = geo.Figures[0];
@@ -568,7 +635,7 @@ namespace Paint
                 };
                 return shape;
             }
-            else if(x is Ellipse ellipse)
+            else if (x is Ellipse ellipse)
             {
                 Shape shape = new Ellipse
                 {
@@ -640,7 +707,7 @@ namespace Paint
                 Height = 30,
                 FontSize = 16,
                 Background = Brushes.Transparent,
-                Foreground = currentColor,                BorderBrush = Brushes.Gray,
+                Foreground = currentColor, BorderBrush = Brushes.Gray,
                 BorderThickness = new Thickness(1),
                 AcceptsReturn = true
             };
@@ -649,6 +716,15 @@ namespace Paint
             Canvas.SetTop(currentTextBox, position.Y);
 
             PaintSurface.Children.Add(currentTextBox);
+
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(currentTextBox);
+                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                Canvas.SetZIndex(currentTextBox, zIndex);
+            }
+
+            
             currentTextBox.Focus();
 
             // Tạo Thumb để resize
@@ -662,6 +738,13 @@ namespace Paint
             Canvas.SetLeft(resizeThumb, position.X + currentTextBox.Width - 5);
             Canvas.SetTop(resizeThumb, position.Y + currentTextBox.Height - 5);
             PaintSurface.Children.Add(resizeThumb);
+
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(resizeThumb);
+                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                Canvas.SetZIndex(resizeThumb, zIndex);
+            }
 
             resizeThumb.DragDelta += (s, e) =>
             {
@@ -706,6 +789,13 @@ namespace Paint
                 Canvas.SetLeft(tb, left);
                 Canvas.SetTop(tb, top);
 
+                if (CurrentLayer != null)
+                {
+                    CurrentLayer.Elements.Add(tb);
+                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                    Canvas.SetZIndex(tb, zIndex);
+                }
+
                 UndoPush(tb);
             }
             else
@@ -733,31 +823,31 @@ namespace Paint
                 });
             });
         }
-      
 
-private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-{
-    if (Keyboard.Modifiers == ModifierKeys.Control)
-    {
-        e.Handled = true;
-        Point mousePos = e.GetPosition(PaintSurface);
-        Point mouseView = e.GetPosition(CanvasScrollViewer);
-        double zoomFactor = 0.1; 
-        if (e.Delta < 0)
+
+        private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            zoomFactor = -0.1;
-        }
-        double newScale = ZoomSlider.Value + zoomFactor;
-        newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
-        if (newScale == ZoomSlider.Value) return;
-        ZoomSlider.Value = newScale;
-        double newOffsetX = (mousePos.X * newScale) - mouseView.X;
-        double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                Point mousePos = e.GetPosition(PaintSurface);
+                Point mouseView = e.GetPosition(CanvasScrollViewer);
+                double zoomFactor = 0.1;
+                if (e.Delta < 0)
+                {
+                    zoomFactor = -0.1;
+                }
+                double newScale = ZoomSlider.Value + zoomFactor;
+                newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
+                if (newScale == ZoomSlider.Value) return;
+                ZoomSlider.Value = newScale;
+                double newOffsetX = (mousePos.X * newScale) - mouseView.X;
+                double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
 
-        CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
-        CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
-    }
-}
+                CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
+                CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
+            }
+        }
         void draweraser(Point p)
         {
             double size = thicknessslider.Value;
@@ -766,5 +856,101 @@ private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEvent
             );
             group.Children.Add(eraserGeom);
         }
+
+
+
+
+        private void AddLayer_Click(object sender, RoutedEventArgs e)
+        {
+            string newName = $"Layer {Layers.Count + 1}";
+            Layer newLayer = new Layer(newName);
+            Layers.Insert(0, newLayer);
+            CurrentLayer = newLayer;
+            LayersListBox.SelectedItem = newLayer;
+        }
+
+        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (Layers.Count <= 1)
+            {
+                MessageBox.Show("Cannot delete the last layer!");
+                return;
+            }
+            Button btn = sender as Button;
+            Layer layerToDelete = btn.Tag as Layer;
+
+
+            if (layerToDelete != null)
+            {
+                foreach (var element in layerToDelete.Elements)
+                {
+                    PaintSurface.Children.Remove(element);
+                }
+                Layers.Remove(layerToDelete);
+                int temp = 1;
+                for (int i = Layers.Count - 1; i >=0 ;i--)
+                {
+                    Layers[i].Name = $"Layer {temp++}";
+                }
+                if (CurrentLayer == layerToDelete)
+                {
+                    LayersListBox.SelectedIndex = 0;
+                    CurrentLayer = Layers[0];
+                }
+            }
+        }
+        private void LayersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LayersListBox.SelectedItem is Layer selected)
+            {
+                CurrentLayer = selected;
+            }
+        }
+    }
+}
+
+public class Layer : INotifyPropertyChanged
+{
+    private string _name;
+    private bool _isVisible;
+
+    public string Name
+    {
+        get => _name;
+        set { _name = value; OnPropertyChanged(); }
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            OnPropertyChanged();
+            UpdateVisibility();
+        }
+    }
+
+    public List<UIElement> Elements { get; set; } = new List<UIElement>();
+
+    public Layer(string name)
+    {
+        Name = name;
+        IsVisible = true;
+    }
+
+    private void UpdateVisibility()
+    {
+        Visibility v = IsVisible ? Visibility.Visible : Visibility.Hidden;
+        foreach (var element in Elements)
+        {
+            element.Visibility = v;
+        }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
