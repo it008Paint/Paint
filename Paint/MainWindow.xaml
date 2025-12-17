@@ -23,16 +23,13 @@
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="90*"/>
-
                 <ColumnDefinition Width="148*"/>
                 <ColumnDefinition Width="197*"/>
                 <ColumnDefinition Width="279*"/>
                 <ColumnDefinition Width="164*"/>
                 <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
-            <!--Selection-->
-            <components:Selection x:Name="selectionToolsControl" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="50" Width="100"/>
+            
             <!-- Tool -->
             <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="80"/>
             <!-- Shapes -->
@@ -40,7 +37,7 @@
             <!-- Colors -->
             <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="260"/>
             <!-- thickness -->
-            <Grid  Grid.Column="4">
+            <Grid  Grid.Column="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="3*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
@@ -51,7 +48,7 @@
                 <Slider x:Name="thicknessslider" VerticalAlignment="Bottom" Maximum="50" Minimum="1"></Slider>
             </Grid>
             <!-- Nâng cao -->
-            <Grid Grid.Column="5">
+            <Grid Grid.Column="4">
                 <!--layer-->
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
@@ -60,7 +57,7 @@
 
                     <Grid Grid.Column="2" Margin="5,0,0,0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="0.45*"/>
+                            <RowDefinition Height="0.45*"/>  
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="0.6*"/>
                         </Grid.RowDefinitions>
