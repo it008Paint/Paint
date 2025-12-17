@@ -95,20 +95,12 @@ namespace Paint
             {
                 selectedshape = tool;
             };
-
-            SimpleToolsRef.ToolSelected += (tool) =>
-            {
-                if (tool == "Selection")
-                {
-                    SetSelectionTool();
-                };
                       
             Layer defaultLayer = new Layer("Layer 1");
             Layers.Add(defaultLayer);
             CurrentLayer = defaultLayer;
             LayersListBox.ItemsSource = Layers;
             LayersListBox.SelectedIndex = 0;
-        }
 
         
         // --- Logic Xử lý Zoom ---
