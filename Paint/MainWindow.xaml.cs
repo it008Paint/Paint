@@ -102,13 +102,8 @@ namespace Paint
                 if (tool == "Selection")
                 {
                     SetSelectionTool();
-                }
-                else
-                {
-                    selectedshape = tool;
-                    ToggleSelection(null);
-                }
-            };
+                };
+                
            
 
 
