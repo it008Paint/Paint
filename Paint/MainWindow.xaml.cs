@@ -51,7 +51,6 @@ namespace Paint
         public string CurrentFilePath { get; set; }
         public Stack<Action>? Undo { get; set; }
         public Stack<Action>? Redo { get; set; }
-
         // --- Logic Zoom ---
         private ScaleTransform _zoomTransform;
         private double _minZoom = 0.25;
@@ -103,16 +102,15 @@ namespace Paint
                 {
                     SetSelectionTool();
                 };
-                
-           
-
-
+                      
             Layer defaultLayer = new Layer("Layer 1");
             Layers.Add(defaultLayer);
             CurrentLayer = defaultLayer;
             LayersListBox.ItemsSource = Layers;
             LayersListBox.SelectedIndex = 0;
         }
+
+        
         // --- Logic Xử lý Zoom ---
 
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
