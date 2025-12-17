@@ -30,8 +30,21 @@
                 <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Tool -->
-            <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="80"/>
+           <StackPanel Grid.Column="0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+
+    <components:SimpleTools x:Name="SimpleToolsRef"
+                            Height="80"
+                            Width="80"/>
+
+    <components:SelectionButton x:Name="SelectionTool"
+                                Height="40"
+                                Width="40"
+                                Margin="5,0"/>
+           </StackPanel>
+
             <!-- Shapes -->
             <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="81" Width="160"/>
             <!-- Colors -->
