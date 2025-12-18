@@ -101,7 +101,7 @@ namespace Paint
             CurrentLayer = defaultLayer;
             LayersListBox.ItemsSource = Layers;
             LayersListBox.SelectedIndex = 0;
-
+       } 
         
         // --- Logic Xử lý Zoom ---
 
