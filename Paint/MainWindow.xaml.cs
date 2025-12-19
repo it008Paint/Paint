@@ -26,8 +26,197 @@ namespace Paint
     /// <summary>
 
     /// </summary>
+
+   
+
     public partial class MainWindow : Window
     {
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete && selectedshape == "Selection")
+            {
+                DeleteSelection();
+                e.Handled = true;
+            }
+        }
+
+        private void DeleteSelection()
+        {
+            if (_selectedElements.Count == 0) return;
+
+            foreach (UIElement el in _selectedElements)
+            {
+                PaintSurface.Children.Remove(el);
+            }
+
+            _selectedElements.Clear();
+
+            // Xóa khung selection
+            if (_selectionRect != null)
+            {
+                PaintSurface.Children.Remove(_selectionRect);
+                _selectionRect = null;
+            }
+        }
+
+
+        private void MoveElement(UIElement el, double dx, double dy)
+        {
+            if (el.RenderTransform is not TranslateTransform tt)
+            {
+                tt = new TranslateTransform();
+                el.RenderTransform = tt;
+            }
+
+            tt.X += dx;
+            tt.Y += dy;
+        }
+
+
+        private bool IsPointInsideSelection(Point p)
+        {
+            if (_selectionRect == null) return false;
+
+            Rect rect = new Rect(
+                Canvas.GetLeft(_selectionRect),
+                Canvas.GetTop(_selectionRect),
+                _selectionRect.Width,
+                _selectionRect.Height
+            );
+
+            return rect.Contains(p);
+        }
+
+        private void SelectElementsInRectangle()
+        {
+            if (_selectionRect == null) return;
+            foreach (UIElement el in _selectedElements)
+            {
+                if (el is Shape s)
+                    s.Opacity = 1.0;
+            }
+
+            _selectedElements.Clear();
+
+            Rect selectionArea = new Rect(
+                Canvas.GetLeft(_selectionRect),
+                Canvas.GetTop(_selectionRect),
+                _selectionRect.Width,
+                _selectionRect.Height
+            );
+
+            foreach (UIElement el in PaintSurface.Children)
+            {
+                if (el == _selectionRect) continue;
+
+                Rect bounds = el.RenderTransform.TransformBounds(
+                    VisualTreeHelper.GetDescendantBounds(el)
+                );
+
+                if (selectionArea.IntersectsWith(bounds))
+                {
+                    _selectedElements.Add(el);
+
+                    if (el is Shape s)
+                        s.Opacity = 0.6;
+                }
+            }
+
+            Debug.WriteLine($"SELECTED = {_selectedElements.Count}");
+        }
+
+
+        private void HighlightElement(UIElement element)
+        {
+            if (element is Shape shape)
+            {
+                shape.StrokeThickness += 1;
+                shape.Stroke = Brushes.Blue;
+            }
+        }
+
+        private void RemoveSelectionRectangle()
+        {
+            if (_selectionRect != null)
+            {
+                PaintSurface.Children.Remove(_selectionRect);
+                _selectionRect = null;
+            }
+        }
+
+        private void ClearSelectedElements()
+        {
+            foreach (var el in _selectedElements)
+            {
+                if (el is Shape s)
+                {
+                    s.Stroke = currcolor;
+                }
+            }
+            _selectedElements.Clear();
+        }
+
+
+
+        // ===== SELECTION (PAINT STYLE) =====
+        private Rectangle? _selectionRect;
+        private Point _selectionStart;
+        private bool _isSelecting = false;
+        private bool _isMovingSelection = false;
+        private List<UIElement> _selectedElements = new();
+        private Point _lastMousePosition;
+
+        private void RemoveSelectionBorder()
+        {
+            if (_selectionBorder != null)
+            {
+                PaintSurface.Children.Remove(_selectionBorder);
+                _selectionBorder = null;
+            }
+        }
+
+
+        private void StartSelection(MouseButtonEventArgs e)
+        {
+            _selectionStartPoint = e.GetPosition(PaintSurface);
+
+            _selectedElement = GetElementAtPoint(_selectionStartPoint);
+
+            if (_selectedElement != null)
+            {
+                _isDragging = true;
+                _originalElementPosition = new Point(
+                    Canvas.GetLeft(_selectedElement),
+                    Canvas.GetTop(_selectedElement)
+                );
+
+                DrawSelectionBorder(_selectedElement);
+            }
+        }
+        private UIElement? GetElementAtPoint(Point point)
+        {
+            HitTestResult result = VisualTreeHelper.HitTest(PaintSurface, point);
+            return result?.VisualHit as UIElement;
+        }
+        private void DrawSelectionBorder(UIElement element)
+        {
+            RemoveSelectionBorder();
+
+            Rect bounds = VisualTreeHelper.GetDescendantBounds(element);
+
+            _selectionBorder = new Border
+            {
+                BorderBrush = Brushes.Blue,
+                BorderThickness = new Thickness(1),
+                Width = bounds.Width,
+                Height = bounds.Height
+            };
+
+            Canvas.SetLeft(_selectionBorder, Canvas.GetLeft(element));
+            Canvas.SetTop(_selectionBorder, Canvas.GetTop(element));
+
+            PaintSurface.Children.Add(_selectionBorder);
+        }
         // --- Logic Vẽ Hình (Của bạn) ---
         Point startpoint;
         string? selectedshape = null;
@@ -36,6 +225,7 @@ namespace Paint
         int clickcountbezier = 2;
         int iserasing = 0;
         private GeometryGroup? group = null;
+
 
         private Polyline? currentPolyline = null;
         private bool isDrawingPencil = false;
@@ -65,6 +255,10 @@ namespace Paint
         public MainWindow()
         {
             InitializeComponent();
+            this.Focus();
+
+
+
 
             // Khởi tạo logic Zoom
             _zoomTransform = new ScaleTransform(1.0, 1.0);
@@ -182,11 +376,71 @@ namespace Paint
             }
         }
 
+
+
         // --- Logic Xử lý Vẽ hình (Của bạn) ---
 
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startpoint = e.GetPosition(PaintSurface);
+            Point pos = e.GetPosition(PaintSurface);
+            Debug.WriteLine($"SelectionRect null? {_selectionRect == null}");
+            Debug.WriteLine($"SelectedElements count: {_selectedElements.Count}");
+
+
+            if (selectedshape == "Selection")
+            {
+
+                Point p = e.GetPosition(PaintSurface);
+
+                if (_selectionRect != null && IsPointInsideSelection(pos))
+                {
+                    _isMovingSelection = true;
+                    _lastMousePosition = pos;
+                    PaintSurface.CaptureMouse();
+                    return;
+                }
+                if (IsPointInsideSelection(pos) && _selectedElements.Count > 0)
+                {
+                    _isMovingSelection = true;
+                    _lastMousePosition = pos;
+                    return;
+                }
+            }
+
+
+            if (selectedshape == "Selection")
+            {
+                _selectionStart = e.GetPosition(PaintSurface);
+                _isSelecting = true;
+
+                // Xóa selection cũ
+                RemoveSelectionRectangle();
+                _selectedElements.Clear();
+
+                _selectionRect = new Rectangle
+                {
+                    Stroke = Brushes.Blue,
+                    StrokeThickness = 1,
+                    StrokeDashArray = new DoubleCollection { 4, 2 },
+                    Fill = Brushes.Transparent
+                };
+
+                Canvas.SetLeft(_selectionRect, _selectionStart.X);
+                Canvas.SetTop(_selectionRect, _selectionStart.Y);
+                PaintSurface.Children.Add(_selectionRect);
+
+                return;
+            }
+
+
+            ///////////////////////////////////////////////////////////////////// /////////////////////////////////////////////////////////////////////
+            if (selectedshape == "Selection")
+            {
+                StartSelection(e);
+                return;
+            }
+            //// /////////////////////////////////////////////////////////////// /////////////////////////////////////////////////////////////////////
 
             if (selectedshape == "Fill")
             {
@@ -250,10 +504,88 @@ namespace Paint
                 createshape(startpoint);
             }
         }
+       
+
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
         {
             Point currentPoint = e.GetPosition(PaintSurface);
+
+            if (_isMovingSelection && e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point currentPos = e.GetPosition(PaintSurface);
+                System.Windows.Vector delta = currentPos - _lastMousePosition;
+
+                foreach (UIElement el in _selectedElements)
+                {
+                    MoveElement(el, delta.X, delta.Y);
+                }
+
+                foreach (UIElement el in _selectedElements)
+                {
+                    double left = Canvas.GetLeft(el);
+                    double top = Canvas.GetTop(el);
+
+                    Canvas.SetLeft(el, left + delta.X);
+                    Canvas.SetTop(el, top + delta.Y);
+                }
+
+                // Di chuyển luôn khung selection
+                Canvas.SetLeft(_selectionRect, Canvas.GetLeft(_selectionRect) + delta.X);
+                Canvas.SetTop(_selectionRect, Canvas.GetTop(_selectionRect) + delta.Y);
+
+                _lastMousePosition = currentPos;
+                return;
+            }
+
+            if (_isSelecting && _selectionRect != null)
+            {
+                Point pos = e.GetPosition(PaintSurface);
+
+                double x = Math.Min(pos.X, _selectionStart.X);
+                double y = Math.Min(pos.Y, _selectionStart.Y);
+                double w = Math.Abs(pos.X - _selectionStart.X);
+                double h = Math.Abs(pos.Y - _selectionStart.Y);
+
+                Canvas.SetLeft(_selectionRect, x);
+                Canvas.SetTop(_selectionRect, y);
+                _selectionRect.Width = w;
+                _selectionRect.Height = h;
+                return;
+            }
+
+            if (selectedshape == "Selection" && _isSelecting && _selectionRect != null)
+            {
+                Point current = e.GetPosition(PaintSurface);
+
+                double x = Math.Min(current.X, _selectionStart.X);
+                double y = Math.Min(current.Y, _selectionStart.Y);
+                double w = Math.Abs(current.X - _selectionStart.X);
+                double h = Math.Abs(current.Y - _selectionStart.Y);
+
+                Canvas.SetLeft(_selectionRect, x);
+                Canvas.SetTop(_selectionRect, y);
+
+                _selectionRect.Width = w;
+                _selectionRect.Height = h;
+                return;
+            }
+
+            if (selectedshape == "Selection" && _isDragging && _selectedElement != null)
+            {
+                Point current = e.GetPosition(PaintSurface);
+                System.Windows.Vector delta = current - _selectionStartPoint;
+
+                Canvas.SetLeft(_selectedElement, _originalElementPosition.X + delta.X);
+                Canvas.SetTop(_selectedElement, _originalElementPosition.Y + delta.Y);
+
+                if (_selectionBorder != null)
+                {
+                    Canvas.SetLeft(_selectionBorder, Canvas.GetLeft(_selectedElement));
+                    Canvas.SetTop(_selectionBorder, Canvas.GetTop(_selectedElement));
+                }
+                return;
+            }
 
             // --- Nếu đang vẽ Pencil ---
             if (isDrawingPencil && e.LeftButton == MouseButtonState.Pressed)
@@ -275,6 +607,22 @@ namespace Paint
 
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_isSelecting)
+            {
+                _isSelecting = false;
+                SelectElementsInRectangle();
+                return;
+            }
+            if (selectedshape == "Selection")
+            {
+                SelectElementsInRectangle();
+            }
+
+            if (selectedshape == "Selection" && _isSelecting)
+            {
+                _isSelecting = false;
+            }
+
             if (isDrawingPencil)
             {
                 Shape shape = CloneShape(currentPolyline);
@@ -337,6 +685,10 @@ namespace Paint
                 UndoPush(shape);
                 Redo.Clear();
                 drawshape = null;
+                _isDragging = false;
+                _isMovingSelection = false;
+                PaintSurface.ReleaseMouseCapture();
+
             }
         }
 
