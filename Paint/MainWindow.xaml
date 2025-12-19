@@ -7,7 +7,11 @@
         xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1280" MinHeight="900" MinWidth="1280">
+        Title="MainWindow" Height="900" Width="1280" MinHeight="900" MinWidth="1280"
+        KeyDown="Window_KeyDown"
+        Focusable="True">
+
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.5*"/>
@@ -30,7 +34,7 @@
                 <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Tool --> <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="80"/>
+            <!-- Tool --> <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="128"/>
             <!-- Shapes -->
             <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="81" Width="160"/>
             <!-- Colors -->
@@ -113,12 +117,21 @@
                           PreviewMouseMove="CanvasScrollViewer_MouseMove"
                           PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp"
                           PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel">
-                <Canvas Background="White" x:Name="PaintSurface"
-                        Width="1500" Height="1000"
-                        Mouse.MouseDown="canvas_MouseDown" 
-                        Mouse.MouseMove="canvas_MouseMove" 
-                        Mouse.MouseUp="canvas_MouseUp">
-                </Canvas>
+                <Grid>
+
+                    <Canvas
+                     Background="White" x:Name="PaintSurface"
+                     Width="1500" Height="1000"
+                     Mouse.MouseDown="canvas_MouseDown" 
+                     Mouse.MouseMove="canvas_MouseMove" 
+                       Mouse.MouseUp="canvas_MouseUp">
+                        <components:Selection x:Name="SelectionTool"
+                      IsHitTestVisible="False"/>
+                    </Canvas>
+
+                </Grid>
+                    
+              
             </ScrollViewer>
             
             
