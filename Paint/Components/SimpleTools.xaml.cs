@@ -18,6 +18,9 @@ namespace Paint.Components
     /// <summary>
     /// Interaction logic for SimpleTools.xaml
     /// </summary>
+
+   
+
     public partial class SimpleTools : UserControl
     {
         public event Action<string>? ToolSelected;
@@ -25,6 +28,16 @@ namespace Paint.Components
         public SimpleTools()
         {
             InitializeComponent();
+        }
+        private void SelectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            Selected = true;
+            ToolSelected?.Invoke("Selection");
+
+            Deselect();
+            Button button = sender as Button;
+            button.BorderBrush = Brushes.Blue;
+            button.BorderThickness = new Thickness(3);
         }
 
         private void PencilButton_Click(object sender, RoutedEventArgs e)
