@@ -283,6 +283,9 @@ namespace Paint
             {
                 currcolor = color;
                 currentColor = color;
+
+                if (_activeTextBox != null)
+                    _activeTextBox.Foreground = color;
             };
 
             SimpleToolsRef.ToolSelected += (tool) =>
@@ -408,6 +411,11 @@ namespace Paint
                 }
             }
 
+            if (selectedshape == "Text")
+            {
+                CreateTextBox(e.GetPosition(PaintSurface));
+                return;
+            }
 
             if (selectedshape == "Selection")
             {
@@ -471,11 +479,6 @@ namespace Paint
                 return;
             }
 
-            if (selectedshape == "Text")
-            {
-                AddTextBoxAtPoint(startpoint);
-                return;
-            }
 
 
             if (selectedshape == "Pencil")
@@ -1051,116 +1054,7 @@ namespace Paint
             return x;
         }
 
-        private void AddTextBoxAtPoint(Point position)
-        {
-            if (currentTextBox != null)
-                return;
-
-            currentTextBox = new TextBox
-            {
-                Width = 150,
-                Height = 30,
-                FontSize = 16,
-                Background = Brushes.Transparent,
-                Foreground = currentColor, BorderBrush = Brushes.Gray,
-                BorderThickness = new Thickness(1),
-                AcceptsReturn = true
-            };
-
-            Canvas.SetLeft(currentTextBox, position.X);
-            Canvas.SetTop(currentTextBox, position.Y);
-
-            PaintSurface.Children.Add(currentTextBox);
-
-            if (CurrentLayer != null)
-            {
-                CurrentLayer.Elements.Add(currentTextBox);
-                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
-                Canvas.SetZIndex(currentTextBox, zIndex);
-            }
-
-            
-            currentTextBox.Focus();
-
-            // Tạo Thumb để resize
-            Thumb resizeThumb = new Thumb
-            {
-                Width = 10,
-                Height = 10,
-                Background = Brushes.Gray,
-                Cursor = Cursors.SizeNWSE
-            };
-            Canvas.SetLeft(resizeThumb, position.X + currentTextBox.Width - 5);
-            Canvas.SetTop(resizeThumb, position.Y + currentTextBox.Height - 5);
-            PaintSurface.Children.Add(resizeThumb);
-
-            if (CurrentLayer != null)
-            {
-                CurrentLayer.Elements.Add(resizeThumb);
-                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
-                Canvas.SetZIndex(resizeThumb, zIndex);
-            }
-
-            resizeThumb.DragDelta += (s, e) =>
-            {
-                currentTextBox.Width = Math.Max(30, currentTextBox.Width + e.HorizontalChange);
-                currentTextBox.Height = Math.Max(20, currentTextBox.Height + e.VerticalChange);
-
-                Canvas.SetLeft(resizeThumb, Canvas.GetLeft(currentTextBox) + currentTextBox.Width - resizeThumb.Width / 2);
-                Canvas.SetTop(resizeThumb, Canvas.GetTop(currentTextBox) + currentTextBox.Height - resizeThumb.Height / 2);
-            };
-
-            currentTextBox.KeyDown += (s, e) =>
-            {
-                if (e.Key == Key.Enter)
-                {
-                    FinalizeTextBox();
-                    PaintSurface.Children.Remove(resizeThumb);
-                    e.Handled = true;
-                }
-            };
-        }
-
-        private void FinalizeTextBox()
-        {
-            if (currentTextBox == null)
-                return;
-
-            string text = currentTextBox.Text;
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                TextBlock tb = new TextBlock
-                {
-                    Text = text,
-                    FontSize = currentTextBox.FontSize,
-                    Foreground = currentColor
-                };
-
-                double left = Canvas.GetLeft(currentTextBox);
-                double top = Canvas.GetTop(currentTextBox);
-
-                PaintSurface.Children.Remove(currentTextBox);
-                PaintSurface.Children.Add(tb);
-                Canvas.SetLeft(tb, left);
-                Canvas.SetTop(tb, top);
-
-                if (CurrentLayer != null)
-                {
-                    CurrentLayer.Elements.Add(tb);
-                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
-                    Canvas.SetZIndex(tb, zIndex);
-                }
-
-                UndoPush(tb);
-            }
-            else
-            {
-                PaintSurface.Children.Remove(currentTextBox);
-            }
-
-            currentTextBox = null;
-        }
-
+        
         private void UndoPush(UIElement element)
         {
             double left = Canvas.GetLeft(element);
@@ -1177,6 +1071,216 @@ namespace Paint
                     UndoPush(element);
                 });
             });
+        }
+
+
+        private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                Point mousePos = e.GetPosition(PaintSurface);
+                Point mouseView = e.GetPosition(CanvasScrollViewer);
+                double zoomFactor = 0.1;
+                if (e.Delta < 0)
+                {
+                    zoomFactor = -0.1;
+                }
+                double newScale = ZoomSlider.Value + zoomFactor;
+                newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
+                if (newScale == ZoomSlider.Value) return;
+                ZoomSlider.Value = newScale;
+                double newOffsetX = (mousePos.X * newScale) - mouseView.X;
+                double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
+
+                CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
+                CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
+            }
+        }
+        private TextBox? _activeTextBox;
+        private void CreateTextBox(Point position)
+        {
+            double w = 120;
+            double h = 50;
+
+            Canvas textCanvas = new Canvas
+            {
+                Width = w,
+                Height = h,
+                Background = Brushes.Transparent
+            };
+
+            Border border = new Border
+            {
+                Width = w,
+                Height = h,
+                BorderBrush = Brushes.Blue,
+                BorderThickness = new Thickness(1),
+                Background = Brushes.Transparent
+            };
+
+            TextBox textBox = new TextBox
+            {
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                BorderThickness = new Thickness(0),
+                Background = Brushes.Transparent,
+                FontSize = 16,
+                Padding = new Thickness(6),
+                VerticalContentAlignment = VerticalAlignment.Top,
+                Foreground = currentColor
+            };
+
+            _activeTextBox = textBox;
+            textBox.GotFocus += (s, e) => _activeTextBox = textBox;
+
+            border.Child = textBox;
+            textCanvas.Children.Add(border);
+
+            // Resize
+            Thumb resizeThumb = new Thumb
+            {
+                Width = 10,
+                Height = 10,
+                Background = Brushes.Blue,
+                Cursor = Cursors.SizeNWSE
+            };
+
+            Canvas.SetRight(resizeThumb, 0);
+            Canvas.SetBottom(resizeThumb, 0);
+            textCanvas.Children.Add(resizeThumb);
+
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(resizeThumb);
+                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                Canvas.SetZIndex(resizeThumb, zIndex);
+            }
+
+            resizeThumb.DragDelta += (s, e) =>
+            {
+                double newW = Math.Max(60, textCanvas.Width + e.HorizontalChange);
+                double newH = Math.Max(30, textCanvas.Height + e.VerticalChange);
+
+                textCanvas.Width = newW;
+                textCanvas.Height = newH;
+
+                border.Width = newW;
+                border.Height = newH;
+            };
+
+
+            Canvas.SetLeft(textCanvas, position.X);
+            Canvas.SetTop(textCanvas, position.Y);
+
+            PaintSurface.Children.Add(textCanvas);
+
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(textCanvas);
+                Canvas.SetZIndex(textCanvas, Layers.Count - Layers.IndexOf(CurrentLayer));
+            }
+
+            textBox.Focus();
+        }
+
+        void draweraser(Point p)
+        {
+            double size = thicknessslider.Value;
+            var eraserGeom = new RectangleGeometry(
+                new Rect(p.X - size / 2, p.Y - size / 2, size, size)
+            );
+            group.Children.Add(eraserGeom);
+        }
+
+
+
+
+        private void AddLayer_Click(object sender, RoutedEventArgs e)
+        {
+            string newName = $"Layer {Layers.Count + 1}";
+            Layer newLayer = new Layer(newName);
+            Layers.Insert(0, newLayer);
+            CurrentLayer = newLayer;
+            LayersListBox.SelectedItem = newLayer;
+        }
+
+        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (Layers.Count <= 1)
+            {
+                MessageBox.Show("Cannot delete the last layer!");
+                return;
+            }
+            Button btn = sender as Button;
+            Layer layerToDelete = btn.Tag as Layer;
+
+
+            if (layerToDelete != null)
+            {
+                foreach (var element in layerToDelete.Elements)
+                {
+                    PaintSurface.Children.Remove(element);
+                }
+                Layers.Remove(layerToDelete);
+                int temp = 1;
+                for (int i = Layers.Count - 1; i >=0 ;i--)
+                {
+                    Layers[i].Name = $"Layer {temp++}";
+                }
+                if (CurrentLayer == layerToDelete)
+                {
+                    LayersListBox.SelectedIndex = 0;
+                    CurrentLayer = Layers[0];
+                }
+            }
+        }
+        private void LayersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LayersListBox.SelectedItem is Layer selected)
+            {
+                CurrentLayer = selected;
+            }
+        }
+    }
+}
+
+public class Layer : INotifyPropertyChanged
+{
+    private string _name;
+    private bool _isVisible;
+
+    public string Name
+    {
+        get => _name;
+        set { _name = value; OnPropertyChanged(); }
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            OnPropertyChanged();
+            UpdateVisibility();
+        }
+    }
+
+    public List<UIElement> Elements { get; set; } = new List<UIElement>();
+
+    public Layer(string name)
+    {
+        Name = name;
+        IsVisible = true;
+    }
+
+    private void UpdateVisibility()
+    {
+        Visibility v = IsVisible ? Visibility.Visible : Visibility.Hidden;
+        foreach (var element in Elements)
+        {
+            element.Visibility = v;
         }
 
 
@@ -1301,6 +1405,12 @@ public class Layer : INotifyPropertyChanged
         {
             element.Visibility = v;
         }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
