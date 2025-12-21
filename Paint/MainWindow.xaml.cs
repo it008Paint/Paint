@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics; 
@@ -236,6 +236,8 @@ namespace Paint
         private bool _isDragging = false;              
         private Point _originalElementPosition;         
         private Border? _selectionBorder = null;
+
+        private TextBox? currentTextBox = null;
         public string CurrentFilePath { get; set; }
         public Stack<Action>? Undo { get; set; }
         public Stack<Action>? Redo { get; set; }
@@ -1148,6 +1150,13 @@ namespace Paint
             Canvas.SetBottom(resizeThumb, 0);
             textCanvas.Children.Add(resizeThumb);
 
+            if (CurrentLayer != null)
+            {
+                CurrentLayer.Elements.Add(resizeThumb);
+                int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
+                Canvas.SetZIndex(resizeThumb, zIndex);
+            }
+
             resizeThumb.DragDelta += (s, e) =>
             {
                 double newW = Math.Max(60, textCanvas.Width + e.HorizontalChange);
@@ -1273,6 +1282,135 @@ public class Layer : INotifyPropertyChanged
         {
             element.Visibility = v;
         }
+
+
+        private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                Point mousePos = e.GetPosition(PaintSurface);
+                Point mouseView = e.GetPosition(CanvasScrollViewer);
+                double zoomFactor = 0.1;
+                if (e.Delta < 0)
+                {
+                    zoomFactor = -0.1;
+                }
+                double newScale = ZoomSlider.Value + zoomFactor;
+                newScale = Math.Max(_minZoom, Math.Min(_maxZoom, newScale));
+                if (newScale == ZoomSlider.Value) return;
+                ZoomSlider.Value = newScale;
+                double newOffsetX = (mousePos.X * newScale) - mouseView.X;
+                double newOffsetY = (mousePos.Y * newScale) - mouseView.Y;
+
+                CanvasScrollViewer.ScrollToHorizontalOffset(newOffsetX);
+                CanvasScrollViewer.ScrollToVerticalOffset(newOffsetY);
+            }
+        }
+        void draweraser(Point p)
+        {
+            double size = thicknessslider.Value;
+            var eraserGeom = new RectangleGeometry(
+                new Rect(p.X - size / 2, p.Y - size / 2, size, size)
+            );
+            group.Children.Add(eraserGeom);
+        }
+
+
+
+
+        private void AddLayer_Click(object sender, RoutedEventArgs e)
+        {
+            string newName = $"Layer {Layers.Count + 1}";
+            Layer newLayer = new Layer(newName);
+            Layers.Insert(0, newLayer);
+            CurrentLayer = newLayer;
+            LayersListBox.SelectedItem = newLayer;
+        }
+
+        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (Layers.Count <= 1)
+            {
+                MessageBox.Show("Cannot delete the last layer!");
+                return;
+            }
+            Button btn = sender as Button;
+            Layer layerToDelete = btn.Tag as Layer;
+
+
+            if (layerToDelete != null)
+            {
+                foreach (var element in layerToDelete.Elements)
+                {
+                    PaintSurface.Children.Remove(element);
+                }
+                Layers.Remove(layerToDelete);
+                int temp = 1;
+                for (int i = Layers.Count - 1; i >=0 ;i--)
+                {
+                    Layers[i].Name = $"Layer {temp++}";
+                }
+                if (CurrentLayer == layerToDelete)
+                {
+                    LayersListBox.SelectedIndex = 0;
+                    CurrentLayer = Layers[0];
+                }
+            }
+        }
+        private void LayersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LayersListBox.SelectedItem is Layer selected)
+            {
+                CurrentLayer = selected;
+            }
+        }
+    }
+}
+
+public class Layer : INotifyPropertyChanged
+{
+    private string _name;
+    private bool _isVisible;
+
+    public string Name
+    {
+        get => _name;
+        set { _name = value; OnPropertyChanged(); }
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            OnPropertyChanged();
+            UpdateVisibility();
+        }
+    }
+
+    public List<UIElement> Elements { get; set; } = new List<UIElement>();
+
+    public Layer(string name)
+    {
+        Name = name;
+        IsVisible = true;
+    }
+
+    private void UpdateVisibility()
+    {
+        Visibility v = IsVisible ? Visibility.Visible : Visibility.Hidden;
+        foreach (var element in Elements)
+        {
+            element.Visibility = v;
+        }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

@@ -74,6 +74,16 @@ namespace Paint
             public string? Stroke;
             public double StrokeThickness;
         }
+        public class EraserElement : ElementData
+        {
+            public List<RectData> rectDatas;
+            public string? Stroke;
+            public double StrokeThickness;
+        }
+        public class RectData
+        {
+            public double x, y, width, height;
+        }
         // ==== SAVE TO JSON ====
         public static void SaveCanvasToJson(Canvas canvas, string filePath)
         {
@@ -150,6 +160,32 @@ namespace Paint
 
                     case System.Windows.Shapes.Path path:
                         var geo = path.Data as PathGeometry;
+                        if (geo == null)
+                        {
+                            var groupdata = path.Data as GeometryGroup;
+                            List<RectData> rects = new List<RectData>();
+                            foreach (var g in groupdata.Children)
+                            {
+                                if (g is RectangleGeometry rect)
+                                {
+                                    rects.Add(new RectData
+                                    {
+                                        x = rect.Rect.X,
+                                        y = rect.Rect.Y,
+                                        width = rect.Rect.Width,
+                                        height = rect.Rect.Height
+                                    });
+                                }
+                            }
+                            data.Elements.Add(new EraserElement
+                            {
+                                Type = "Eraser",
+                                rectDatas = rects,
+                                Stroke = (path.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                StrokeThickness = path.StrokeThickness
+                            });
+                            break;
+                        }
                         var fig = geo.Figures.FirstOrDefault();
                         var bez = fig.Segments.OfType<BezierSegment>().FirstOrDefault();
                         data.Elements.Add(new CurveElement
@@ -298,6 +334,22 @@ namespace Paint
                             StrokeThickness = curveData.StrokeThickness
                         };
                         canvas.Children.Add(newCurve);
+                        break;
+
+                    case "Eraser":
+                        var eraserData = e.ToObject<EraserElement>();
+                        GeometryGroup geometryGroup = new GeometryGroup();
+                        foreach (var g in eraserData.rectDatas)
+                        {
+                            geometryGroup.Children.Add(new RectangleGeometry(new Rect(g.x, g.y, g.width, g.height)));
+                        }
+                        var newEraser = new System.Windows.Shapes.Path
+                        {
+                            Data = geometryGroup,
+                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(eraserData.Stroke) ?? ""),
+                            StrokeThickness = eraserData.StrokeThickness
+                        };
+                        canvas.Children.Add(newEraser);
                         break;
 
                     //////

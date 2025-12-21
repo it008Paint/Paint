@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:Paint.Components"
              mc:Ignorable="d" 
              d:DesignHeight="80" Width="160">
-    <Grid>
+    <Grid x:Name="shape">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="40"/>

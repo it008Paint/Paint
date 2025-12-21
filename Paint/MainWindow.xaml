@@ -7,11 +7,15 @@
         xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1280" MinHeight="720" MinWidth="1280">
+        Title="MainWindow" Height="900" Width="1280" MinHeight="900" MinWidth="1280"
+        KeyDown="Window_KeyDown"
+        Focusable="True">
+
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.5*"/>
-            <RowDefinition Height="2*"/>
+            <RowDefinition Height="2.5*"/>
             <RowDefinition Height="12*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -23,19 +27,18 @@
         <!-- Tools vẽ cơ bản -->
         <Grid Grid.Row="1" Background="#E0E0E0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.5*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="2.5*"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="148*"/>
+                <ColumnDefinition Width="197*"/>
+                <ColumnDefinition Width="279*"/>
+                <ColumnDefinition Width="164*"/>
+                <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
-
-            <!-- Tool -->
-            <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            
+            <!-- Tool --> <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="128"/>
             <!-- Shapes -->
-            <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="81" Width="160"/>
             <!-- Colors -->
-            <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <components:Colors x:Name="currentcolor" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="260"/>
             <!-- thickness -->
             <Grid  Grid.Column="3">
                 <Grid.RowDefinitions>
@@ -48,8 +51,48 @@
                 <Slider x:Name="thicknessslider" VerticalAlignment="Bottom" Maximum="50" Minimum="1"></Slider>
             </Grid>
             <!-- Nâng cao -->
-            <Grid Grid.Column="3">
+            <Grid Grid.Column="4">
+                <!--layer-->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
 
+                    <Grid Grid.Column="2" Margin="5,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.45*"/>  
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="0.6*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Layers" FontWeight="Bold" Margin="5" FontSize="16" HorizontalAlignment="Center"/>
+
+                        <ListBox Grid.Row="1" x:Name="LayersListBox" SelectionChanged="LayersListBox_SelectionChanged" HorizontalContentAlignment="Stretch">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsVisible}" VerticalAlignment="Center" Margin="0,0,5,0" ToolTip="Show/Hide">
+                                            <TextBlock Text="👁" FontSize="14"/>
+                                        </CheckBox>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+
+                                        <Button Grid.Column="2" Content="❌" Width="20" Height="20" Background="Transparent" BorderBrush="Transparent" Foreground="Red"
+                    Click="DeleteLayer_Click" Tag="{Binding}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Button Grid.Row="2" Content="+ New Layer" Height="30" Margin="5" Click="AddLayer_Click" Background="#DDDDDD"/>
+                    </Grid>
+                </Grid>
             </Grid>
         </Grid>
 
@@ -65,22 +108,34 @@
                 <ColumnDefinition Width="25*"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
+
             <ScrollViewer Grid.Row="1" Grid.Column="1" 
                           x:Name="CanvasScrollViewer"
                           VerticalScrollBarVisibility="Auto" 
                           HorizontalScrollBarVisibility="Auto"
                           PreviewMouseRightButtonDown="CanvasScrollViewer_MouseDown"
                           PreviewMouseMove="CanvasScrollViewer_MouseMove"
-                          PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp">
+                          PreviewMouseRightButtonUp="CanvasScrollViewer_MouseUp"
+                          PreviewMouseWheel="CanvasScrollViewer_PreviewMouseWheel">
+                <Grid>
 
-                <!-- Canvas. Đặt kích thước cố định để Zoom và Scroll hoạt động -->
-                <Canvas Background="White" x:Name="PaintSurface"
-                        Width="1500" Height="1000"
-                        Mouse.MouseDown="canvas_MouseDown" 
-                        Mouse.MouseMove="canvas_MouseMove" 
-                        Mouse.MouseUp="canvas_MouseUp">
-                </Canvas>
+                    <Canvas
+                     Background="White" x:Name="PaintSurface"
+                     Width="1500" Height="1000"
+                     Mouse.MouseDown="canvas_MouseDown" 
+                     Mouse.MouseMove="canvas_MouseMove" 
+                       Mouse.MouseUp="canvas_MouseUp">
+                        <components:Selection x:Name="SelectionTool"
+                      IsHitTestVisible="False"/>
+                    </Canvas>
+
+                </Grid>
+                    
+              
             </ScrollViewer>
+            
+            
+
         </Grid>
 
         <!-- Thanh dưới -->
@@ -102,6 +157,5 @@
                 <fa:IconImage Icon="SearchPlus"/>
             </Button>
         </StackPanel>
-     
     </Grid>
 </Window>
