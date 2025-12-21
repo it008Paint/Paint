@@ -39,7 +39,7 @@ namespace Paint.Components
                     );
                     if (result == MessageBoxResult.Yes)
                     {
-                        FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+                        FileManager.SaveCanvasToJson(MainWindowRef, MainWindowRef.CurrentFilePath);
                     }
                 }
             }
@@ -54,7 +54,7 @@ namespace Paint.Components
             var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Paint project (*.json)|*.json" };
             if (dlg.ShowDialog() == true)
             {
-                FileManager.LoadCanvasFromJson(MainWindowRef.PaintSurface, dlg.FileName);
+                FileManager.LoadCanvasFromJson(MainWindowRef, dlg.FileName);
                 MainWindowRef.CurrentFilePath = dlg.FileName;
                 MainWindowRef.Undo.Clear();
                 MainWindowRef.Redo.Clear();
@@ -67,20 +67,20 @@ namespace Paint.Components
                 SaveAs_Click(sender, e);
                 return;
             }
-            FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, MainWindowRef.CurrentFilePath);
+            FileManager.SaveCanvasToJson(MainWindowRef, MainWindowRef.CurrentFilePath);
         }
         private void SaveAs_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "Paint project (*.json)|*.json" };
             if (dlg.ShowDialog() == true)
             {
-                FileManager.SaveCanvasToJson(MainWindowRef.PaintSurface, dlg.FileName);
+                FileManager.SaveCanvasToJson(MainWindowRef, dlg.FileName);
                 MainWindowRef.CurrentFilePath = dlg.FileName;
             }
         }
         private void Import_Click(object sender, RoutedEventArgs e)
         {
-            FileManager.ImportImageToCanvas(MainWindowRef.PaintSurface);
+            FileManager.ImportImageToCanvas(MainWindowRef);
         }
 
         private void Export_Click(object sender, RoutedEventArgs e)
@@ -102,26 +102,32 @@ namespace Paint.Components
 
         private void Undo_Click(object sender, RoutedEventArgs e)
         {
+            if (!MainWindowRef.CurrentLayer.IsVisible) return;
             Action action;
-            if (MainWindowRef.Undo.TryPop(out action) == false) return;
+            if (MainWindowRef.CurrentLayer.Undo.TryPop(out action) == false) return;
             action.Invoke();
         }
 
         private void Redo_Click(object sender, RoutedEventArgs e)
         {
+            if (!MainWindowRef.CurrentLayer.IsVisible) return;
             Action action;
-            if (MainWindowRef.Redo.TryPop(out action) == false) return;
+            if (MainWindowRef.CurrentLayer.Redo.TryPop(out action) == false) return;
             action.Invoke();
         }
 
         private void ClearCanvas_Click(object sender, RoutedEventArgs e)
         {
             if (MainWindowRef == null) return;
+            if (!MainWindowRef.CurrentLayer.IsVisible) return;
 
-            MainWindowRef.PaintSurface.Children.Clear();
-
-            MainWindowRef.Undo.Clear();
-            MainWindowRef.Redo.Clear();
+            foreach (var element in MainWindowRef.CurrentLayer.Elements)
+            {
+                MainWindowRef.PaintSurface.Children.Remove(element);
+            }
+            MainWindowRef.CurrentLayer.Elements.Clear();
+            MainWindowRef.CurrentLayer.Undo.Clear();
+            MainWindowRef.CurrentLayer.Redo.Clear();
         }
     }
 }
