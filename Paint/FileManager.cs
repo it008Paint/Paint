@@ -6,6 +6,7 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Security.Permissions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup.Localizer;
@@ -22,9 +23,13 @@ namespace Paint
         private class CanvasData
         {
             public string BackgroundColor { get; set; } = "White";
+            public List<LayerData> Elements { get; set; } = new();
+        }
+        public class LayerData
+        {
+            public string LayerName { get; set; } = "";
             public List<ElementData> Elements { get; set; } = new();
         }
-
         // ==== Một phần tử trên Canvas (Shape hoặc Image) ====
         public class ElementData
         {
@@ -85,278 +90,306 @@ namespace Paint
             public double x, y, width, height;
         }
         // ==== SAVE TO JSON ====
-        public static void SaveCanvasToJson(Canvas canvas, string filePath)
+        public static void SaveCanvasToJson(MainWindow window, string filePath)
         {
             var data = new CanvasData
             {
-                BackgroundColor = (canvas.Background as SolidColorBrush)?.Color.ToString() ?? "White"
+                BackgroundColor = (window.PaintSurface.Background as SolidColorBrush)?.Color.ToString() ?? "White"
             };
-
-            foreach (var child in canvas.Children)
+            foreach (var layer in window.Layers.Reverse())
             {
-                switch (child)
+                LayerData layerData = new LayerData
                 {
-                    case Line line:
-                        data.Elements.Add(new LineElement
-                        {
-                            Type = "Line",
-                            X1 = line.X1,
-                            Y1 = line.Y1,
-                            X2 = line.X2,
-                            Y2 = line.Y2,
-                            Stroke = (line.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            StrokeThickness = line.StrokeThickness
-                        });
-                        break;
-
-                    case Ellipse ellipse:
-                        data.Elements.Add(new EllipseElement
-                        {
-                            Type = "Ellipse",
-                            Left = Canvas.GetLeft(ellipse),
-                            Top = Canvas.GetTop(ellipse),
-                            Width = ellipse.Width,
-                            Height = ellipse.Height,
-                            Stroke = (ellipse.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            Fill = (ellipse.Fill as SolidColorBrush)?.Color.ToString() ?? "1",
-                            StrokeThickness = ellipse.StrokeThickness
-                        });
-                        break;
-
-                    case System.Windows.Shapes.Rectangle rectangle:
-                        data.Elements.Add(new RectangleElement
-                        {
-                            Type = "Rectangle",
-                            Width = rectangle.Width,
-                            Height = rectangle.Height,
-                            Top = Canvas.GetTop(rectangle),
-                            Left = Canvas.GetLeft(rectangle),
-                            Stroke = (rectangle.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            Fill = (rectangle.Fill as SolidColorBrush)?.Color.ToString() ?? "",
-                            StrokeThickness = rectangle.StrokeThickness
-                        });
-                        break;
-
-                    case Polygon polygon:
-                        data.Elements.Add(new PolygonElement
-                        {
-                            Type = "Polygon",
-                            Points = polygon.Points,
-                            Stroke = (polygon.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            Fill = (polygon.Fill as SolidColorBrush)?.Color.ToString() ?? "",
-                            StrokeThickness = polygon.StrokeThickness
-                        });
-                        break;
-
-                    case Polyline polyline:
-                        data.Elements.Add(new PolylineElement
-                        {
-                            Type = "Polyline",
-                            Points = polyline.Points,
-                            Stroke = (polyline.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            StrokeThickness = polyline.StrokeThickness
-                        });
-                        break;
-
-                    case System.Windows.Shapes.Path path:
-                        var geo = path.Data as PathGeometry;
-                        if (geo == null)
-                        {
-                            var groupdata = path.Data as GeometryGroup;
-                            List<RectData> rects = new List<RectData>();
-                            foreach (var g in groupdata.Children)
+                    LayerName = layer.Name
+                };
+                foreach (var child in layer.Elements)
+                {
+                    switch (child)
+                    {
+                        case Line line:
+                            layerData.Elements.Add(new LineElement
                             {
-                                if (g is RectangleGeometry rect)
+                                Type = "Line",
+                                X1 = line.X1,
+                                Y1 = line.Y1,
+                                X2 = line.X2,
+                                Y2 = line.Y2,
+                                Stroke = (line.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                StrokeThickness = line.StrokeThickness
+                            });
+                            break;
+
+                        case Ellipse ellipse:
+                            layerData.Elements.Add(new EllipseElement
+                            {
+                                Type = "Ellipse",
+                                Left = Canvas.GetLeft(ellipse),
+                                Top = Canvas.GetTop(ellipse),
+                                Width = ellipse.Width,
+                                Height = ellipse.Height,
+                                Stroke = (ellipse.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                Fill = (ellipse.Fill as SolidColorBrush)?.Color.ToString() ?? "1",
+                                StrokeThickness = ellipse.StrokeThickness
+                            });
+                            break;
+
+                        case System.Windows.Shapes.Rectangle rectangle:
+                            layerData.Elements.Add(new RectangleElement
+                            {
+                                Type = "Rectangle",
+                                Width = rectangle.Width,
+                                Height = rectangle.Height,
+                                Top = Canvas.GetTop(rectangle),
+                                Left = Canvas.GetLeft(rectangle),
+                                Stroke = (rectangle.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                Fill = (rectangle.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                                StrokeThickness = rectangle.StrokeThickness
+                            });
+                            break;
+
+                        case Polygon polygon:
+                            layerData.Elements.Add(new PolygonElement
+                            {
+                                Type = "Polygon",
+                                Points = polygon.Points,
+                                Stroke = (polygon.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                Fill = (polygon.Fill as SolidColorBrush)?.Color.ToString() ?? "",
+                                StrokeThickness = polygon.StrokeThickness
+                            });
+                            break;
+
+                        case Polyline polyline:
+                            layerData.Elements.Add(new PolylineElement
+                            {
+                                Type = "Polyline",
+                                Points = polyline.Points,
+                                Stroke = (polyline.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                StrokeThickness = polyline.StrokeThickness
+                            }); 
+                            break;
+
+                        case System.Windows.Shapes.Path path:
+                            var geo = path.Data as PathGeometry;
+                            if (geo == null)
+                            {
+                                var groupdata = path.Data as GeometryGroup;
+                                List<RectData> rects = new List<RectData>();
+                                foreach (var g in groupdata.Children)
                                 {
-                                    rects.Add(new RectData
+                                    if (g is RectangleGeometry rect)
                                     {
-                                        x = rect.Rect.X,
-                                        y = rect.Rect.Y,
-                                        width = rect.Rect.Width,
-                                        height = rect.Rect.Height
-                                    });
+                                        rects.Add(new RectData
+                                        {
+                                            x = rect.Rect.X,
+                                            y = rect.Rect.Y,
+                                            width = rect.Rect.Width,
+                                            height = rect.Rect.Height
+                                        });
+                                    }
                                 }
+                                layerData.Elements.Add(new EraserElement
+                                {
+                                    Type = "Eraser",
+                                    rectDatas = rects,
+                                    Stroke = (path.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
+                                    StrokeThickness = path.StrokeThickness
+                                });
+                                break;
                             }
-                            data.Elements.Add(new EraserElement
+                            var fig = geo.Figures.FirstOrDefault();
+                            var bez = fig.Segments.OfType<BezierSegment>().FirstOrDefault();
+                            layerData.Elements.Add(new CurveElement
                             {
-                                Type = "Eraser",
-                                rectDatas = rects,
+                                Type = "Curve",
+                                StartPoint = fig.StartPoint,
+                                Point1 = bez.Point1,
+                                Point2 = bez.Point2,
+                                Point3 = bez.Point3,
                                 Stroke = (path.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
                                 StrokeThickness = path.StrokeThickness
                             });
                             break;
-                        }
-                        var fig = geo.Figures.FirstOrDefault();
-                        var bez = fig.Segments.OfType<BezierSegment>().FirstOrDefault();
-                        data.Elements.Add(new CurveElement
-                        {
-                            Type = "Curve",
-                            StartPoint = fig.StartPoint,
-                            Point1 = bez.Point1,
-                            Point2 = bez.Point2,
-                            Point3 = bez.Point3,
-                            Stroke = (path.Stroke as SolidColorBrush)?.Color.ToString() ?? "",
-                            StrokeThickness = path.StrokeThickness
-                        });
-                        break;
 
-                    case System.Windows.Controls.Image image when image.Source is BitmapSource bitmap:
-                        data.Elements.Add(new ImageElement
-                        {
-                            Type = "Image",
-                            Left = Canvas.GetLeft(image),
-                            Top = Canvas.GetTop(image),
-                            Width = image.Width,
-                            Height = image.Height,
-                            ImageBase64 = EncodeBitmapToBase64(bitmap)
-                        });
-                        break;
-                        //triangle,diamond,star,curve,arrow
+                        case System.Windows.Controls.Image image when image.Source is BitmapSource bitmap:
+                            layerData.Elements.Add(new ImageElement
+                            {
+                                Type = "Image",
+                                Left = Canvas.GetLeft(image),
+                                Top = Canvas.GetTop(image),
+                                Width = image.Width,
+                                Height = image.Height,
+                                ImageBase64 = EncodeBitmapToBase64(bitmap)
+                            });
+                            break;
+                    }
                 }
+                data.Elements.Add(layerData);
             }
-
             string json = JsonConvert.SerializeObject(data, Newtonsoft.Json.Formatting.Indented);
             File.WriteAllText(filePath, json);
         }
 
         // ==== LOAD FROM JSON ====
-        public static void LoadCanvasFromJson(Canvas canvas, string filePath)
+        public static void LoadCanvasFromJson(MainWindow window, string filePath)
         {
             string json = File.ReadAllText(filePath);
             var data = JsonConvert.DeserializeObject<CanvasData>(json);
 
-            canvas.Children.Clear();
-            canvas.Background = (SolidColorBrush)(new BrushConverter().ConvertFromString(data.BackgroundColor) ?? "White");
+            window.PaintSurface.Children.Clear();
+            window.PaintSurface.Background = (SolidColorBrush)(new BrushConverter().ConvertFromString(data.BackgroundColor) ?? "White");
 
             var root = JObject.Parse(json);
             var elements = (JArray)root["Elements"];
 
-            foreach (var e in elements)
+            window.Layers.Clear();
+            foreach (var l in elements)
             {
-                string type = e.Value<string>("Type") ?? string.Empty;
-                switch (type)
+                string layerName = l.Value<string>("LayerName") ?? string.Empty;
+                Layer layer = new Layer(layerName);
+
+                var layerElements = (JArray)l["Elements"] ?? new JArray();
+                foreach (var e in layerElements)
                 {
-                    case "Line":
-                        var lineData = e.ToObject<LineElement>();
-                        var newline = new System.Windows.Shapes.Line
-                        {
-                            X1 = lineData.X1,
-                            X2 = lineData.X2,
-                            Y1 = lineData.Y1,
-                            Y2 = lineData.Y2,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(lineData.Stroke) ?? ""),
-                            StrokeThickness = lineData.StrokeThickness
-                        };
-                        canvas.Children.Add(newline);
-                        break;
-                    
-                    case "Image":
-                        var imageData = e.ToObject<ImageElement>();
-                        var newimage = new System.Windows.Controls.Image
-                        {
-                            Source = DecodeBase64ToBitmap(imageData.ImageBase64),
-                            Width = imageData.Width,
-                            Height = imageData.Height
-                        };
-                        Canvas.SetLeft(newimage, imageData.Left);
-                        Canvas.SetTop(newimage, imageData.Top);
-                        canvas.Children.Add(newimage);
-                        break;
+                    var type = e.Value<string>("Type") ?? string.Empty;
+                    switch (type)
+                    {
+                        case "Line":
+                            var lineData = e.ToObject<LineElement>();
+                            var newline = new System.Windows.Shapes.Line
+                            {
+                                X1 = lineData.X1,
+                                X2 = lineData.X2,
+                                Y1 = lineData.Y1,
+                                Y2 = lineData.Y2,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(lineData.Stroke) ?? ""),
+                                StrokeThickness = lineData.StrokeThickness
+                            };
+                            window.PaintSurface.Children.Add(newline);
+                            layer.Elements.Add(newline);
+                            break;
 
-                    case "Ellipse":
-                        var elData = e.ToObject<EllipseElement>();
-                        var newellipse = new Ellipse
-                        {
-                            Width = elData.Width,
-                            Height = elData.Height,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Stroke) ?? ""),
-                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Fill) ?? ""),
-                            StrokeThickness = elData.StrokeThickness
-                        };
-                        Canvas.SetLeft(newellipse, elData.Left);
-                        Canvas.SetTop(newellipse, elData.Top);
-                        canvas.Children.Add(newellipse);
-                        break;
+                        case "Image":
+                            var imageData = e.ToObject<ImageElement>();
+                            var newimage = new System.Windows.Controls.Image
+                            {
+                                Source = DecodeBase64ToBitmap(imageData.ImageBase64),
+                                Width = imageData.Width,
+                                Height = imageData.Height
+                            };
+                            Canvas.SetLeft(newimage, imageData.Left);
+                            Canvas.SetTop(newimage, imageData.Top);
+                            window.PaintSurface.Children.Add(newimage);
+                            layer.Elements.Add(newimage);
+                            break;
 
-                    case "Rectangle":
-                        var recData = e.ToObject<RectangleElement>();
-                        var newRect = new System.Windows.Shapes.Rectangle
-                        {
-                            Width = recData.Width,
-                            Height = recData.Height,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Stroke) ?? ""),
-                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Fill) ?? ""),
-                            StrokeThickness = recData.StrokeThickness
-                        };
-                        Canvas.SetLeft(newRect, recData.Left);
-                        Canvas.SetTop(newRect, recData.Top);
-                        canvas.Children.Add(newRect);
-                        break;
+                        case "Ellipse":
+                            var elData = e.ToObject<EllipseElement>();
+                            var newellipse = new Ellipse
+                            {
+                                Width = elData.Width,
+                                Height = elData.Height,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Stroke) ?? ""),
+                                Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(elData.Fill) ?? ""),
+                                StrokeThickness = elData.StrokeThickness
+                            };
+                            Canvas.SetLeft(newellipse, elData.Left);
+                            Canvas.SetTop(newellipse, elData.Top);
+                            window.PaintSurface.Children.Add(newellipse);
+                            layer.Elements.Add(newellipse);
+                            break;
 
-                    case "Polygon":
-                        var polygonData = e.ToObject<PolygonElement>();
-                        var newPolygon = new Polygon
-                        {
-                            Points = polygonData.Points,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Stroke) ?? ""),
-                            Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Fill) ?? ""),
-                            StrokeThickness = polygonData.StrokeThickness
-                        };
-                        canvas.Children.Add(newPolygon);
-                        break;
+                        case "Rectangle":
+                            var recData = e.ToObject<RectangleElement>();
+                            var newRect = new System.Windows.Shapes.Rectangle
+                            {
+                                Width = recData.Width,
+                                Height = recData.Height,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Stroke) ?? ""),
+                                Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(recData.Fill) ?? ""),
+                                StrokeThickness = recData.StrokeThickness
+                            };
+                            Canvas.SetLeft(newRect, recData.Left);
+                            Canvas.SetTop(newRect, recData.Top);
+                            window.PaintSurface.Children.Add(newRect);
+                            layer.Elements.Add(newRect);
+                            break;
 
-                    case "Polyline":
-                        var polylineData = e.ToObject<PolylineElement>();
-                        var newPolyline = new Polyline
-                        {
-                            Points = polylineData.Points,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polylineData.Stroke) ?? ""),
-                            StrokeThickness = polylineData.StrokeThickness
-                        };
-                        canvas.Children.Add(newPolyline);
-                        break;
+                        case "Polygon":
+                            var polygonData = e.ToObject<PolygonElement>();
+                            var newPolygon = new Polygon
+                            {
+                                Points = polygonData.Points,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Stroke) ?? ""),
+                                Fill = (SolidColorBrush)(new BrushConverter().ConvertFromString(polygonData.Fill) ?? ""),
+                                StrokeThickness = polygonData.StrokeThickness
+                            };
+                            window.PaintSurface.Children.Add(newPolygon);
+                            layer.Elements.Add(newPolygon);
+                            break;
 
-                    case "Curve":
-                        var curveData = e.ToObject<CurveElement>();
-                        PathGeometry geo = new PathGeometry();
-                        PathFigure fig = new PathFigure();
-                        BezierSegment bez = new BezierSegment();
-                        fig.StartPoint = curveData.StartPoint;
-                        bez.Point1 = curveData.Point1;
-                        bez.Point2 = curveData.Point2;
-                        bez.Point3 = curveData.Point3;
-                        fig.Segments.Add(bez);
-                        geo.Figures.Add(fig);
-                        var newCurve = new System.Windows.Shapes.Path
-                        {
-                            Data = geo,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(curveData.Stroke) ?? ""),
-                            StrokeThickness = curveData.StrokeThickness
-                        };
-                        canvas.Children.Add(newCurve);
-                        break;
+                        case "Polyline":
+                            var polylineData = e.ToObject<PolylineElement>();
+                            var newPolyline = new Polyline
+                            {
+                                Points = polylineData.Points,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polylineData.Stroke) ?? ""),
+                                StrokeThickness = polylineData.StrokeThickness
+                            };
+                            window.PaintSurface.Children.Add(newPolyline);
+                            layer.Elements.Add(newPolyline);
+                            break;
 
-                    case "Eraser":
-                        var eraserData = e.ToObject<EraserElement>();
-                        GeometryGroup geometryGroup = new GeometryGroup();
-                        foreach (var g in eraserData.rectDatas)
-                        {
-                            geometryGroup.Children.Add(new RectangleGeometry(new Rect(g.x, g.y, g.width, g.height)));
-                        }
-                        var newEraser = new System.Windows.Shapes.Path
-                        {
-                            Data = geometryGroup,
-                            Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(eraserData.Stroke) ?? ""),
-                            StrokeThickness = eraserData.StrokeThickness
-                        };
-                        canvas.Children.Add(newEraser);
-                        break;
+                        case "Curve":
+                            var curveData = e.ToObject<CurveElement>();
+                            PathGeometry geo = new PathGeometry();
+                            PathFigure fig = new PathFigure();
+                            BezierSegment bez = new BezierSegment();
+                            fig.StartPoint = curveData.StartPoint;
+                            bez.Point1 = curveData.Point1;
+                            bez.Point2 = curveData.Point2;
+                            bez.Point3 = curveData.Point3;
+                            fig.Segments.Add(bez);
+                            geo.Figures.Add(fig);
+                            var newCurve = new System.Windows.Shapes.Path
+                            {
+                                Data = geo,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(curveData.Stroke) ?? ""),
+                                StrokeThickness = curveData.StrokeThickness
+                            };
+                            window.PaintSurface.Children.Add(newCurve);
+                            layer.Elements.Add(newCurve);
+                            break;
 
-                    //////
-                    default:
-                        MessageBox.Show("nah");
-                        break;
-                }                
+                        case "Eraser":
+                            var eraserData = e.ToObject<EraserElement>();
+                            GeometryGroup geometryGroup = new GeometryGroup();
+                            foreach (var g in eraserData.rectDatas)
+                            {
+                                geometryGroup.Children.Add(new RectangleGeometry(new Rect(g.x, g.y, g.width, g.height)));
+                            }
+                            var newEraser = new System.Windows.Shapes.Path
+                            {
+                                Data = geometryGroup,
+                                Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(eraserData.Stroke) ?? ""),
+                                StrokeThickness = eraserData.StrokeThickness
+                            };
+                            window.PaintSurface.Children.Add(newEraser);
+                            layer.Elements.Add(newEraser);
+                            break;
+
+                        //////
+                        default:
+                            MessageBox.Show("nah");
+                            break;
+                    }
+                }
+                window.Layers.Add(layer);          
+            }
+            var reversedLayers = window.Layers.Reverse().ToList();
+            window.Layers.Clear();
+            foreach (var layer in reversedLayers)
+            {
+                window.Layers.Add(layer);
             }
         }
 
@@ -377,7 +410,7 @@ namespace Paint
         }
 
         // ==== IMPORT IMAGE ====
-        public static void ImportImageToCanvas(Canvas canvas)
+        public static void ImportImageToCanvas(MainWindow window)
         {
             var dlg = new OpenFileDialog
             {
@@ -389,12 +422,15 @@ namespace Paint
                 var img = new System.Windows.Controls.Image
                 {
                     Source = bitmap,
-                    Width = canvas.ActualWidth,
-                    Height = canvas.ActualHeight
+                    Width = window.PaintSurface.ActualWidth,
+                    Height = window.PaintSurface.ActualHeight
                 };
                 Canvas.SetLeft(img, 0);
                 Canvas.SetTop(img, 0);
-                canvas.Children.Insert(0, img);
+                window.PaintSurface.Children.Insert(0, img);
+                Layer layer = new Layer("*imported layer");
+                layer.Elements.Add(img);
+                window.Layers.Add(layer);
             }
         }
 

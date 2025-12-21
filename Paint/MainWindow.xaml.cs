@@ -1,3 +1,4 @@
+using Paint;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -18,6 +19,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 //using System.Drawing;
 
@@ -251,7 +253,7 @@ namespace Paint
         private Point _panStartPoint;
 
         public ObservableCollection<Layer> Layers { get; set; } = new ObservableCollection<Layer>();
-        private Layer CurrentLayer;
+        public Layer CurrentLayer;
         public MainWindow()
         {
             InitializeComponent();
@@ -636,8 +638,8 @@ namespace Paint
                     Canvas.SetZIndex(shape, zIndex);
                 }
 
-                UndoPush(shape);
-                Redo.Clear();
+                CurrentLayer.UndoPush(shape);
+                CurrentLayer.Redo.Clear();
                 isDrawingPencil = false;
                 currentPolyline = null;
             }
@@ -659,8 +661,8 @@ namespace Paint
                     Canvas.SetZIndex(shape, zIndex);
                 }
 
-                UndoPush(shape);
-                Redo.Clear();
+                CurrentLayer.UndoPush(shape);
+                CurrentLayer.Redo.Clear();
                 iserasing = 0;
                 drawshape = null;
             }
@@ -682,8 +684,8 @@ namespace Paint
                     Canvas.SetZIndex(shape, zIndex);
                 }
 
-                UndoPush(shape);
-                Redo.Clear();
+                CurrentLayer.UndoPush(shape);
+                CurrentLayer.Redo.Clear();
                 drawshape = null;
                 _isDragging = false;
                 _isMovingSelection = false;
@@ -782,20 +784,7 @@ namespace Paint
                 Canvas.SetZIndex(img, zIndex);
             }
 
-            UndoPushImage(img);
-        }
-
-        private void UndoPushImage(System.Windows.Controls.Image img)
-        {
-            Undo.Push(() =>
-            {
-                PaintSurface.Children.Remove(img);
-                Redo.Push(() =>
-                {
-                    PaintSurface.Children.Add(img);
-                    UndoPushImage(img);
-                });
-            });
+            CurrentLayer.UndoPushImage(img);
         }
 
         private void createshape(Point startpoint)
@@ -1266,6 +1255,7 @@ namespace Paint
 
 public class Layer : INotifyPropertyChanged
 {
+
     private string _name;
     private bool _isVisible;
 
@@ -1287,7 +1277,42 @@ public class Layer : INotifyPropertyChanged
     }
 
     public List<UIElement> Elements { get; set; } = new List<UIElement>();
+    public Stack<Action>? Undo { get; set; } = new Stack<Action>();
+    public Stack<Action>? Redo { get; set; } = new Stack<Action>();
+    MainWindow window = System.Windows.Application.Current.MainWindow as MainWindow;
+    public void UndoPush(UIElement element)
+    {
+        double left = Canvas.GetLeft(element);
+        double top = Canvas.GetTop(element);
 
+        Undo.Push(() =>
+        {
+            Elements.Remove(element);
+            window.PaintSurface.Children.Remove(element);
+            Redo.Push(() =>
+            {
+                Elements.Add(element);
+                window.PaintSurface.Children.Add(element);
+                Canvas.SetLeft(element, left);
+                Canvas.SetTop(element, top);
+                UndoPush(element);
+            });
+        });
+    }
+    public void UndoPushImage(System.Windows.Controls.Image img)
+    {
+        Undo.Push(() =>
+        {
+            Elements.Remove(img);
+            window.PaintSurface.Children.Remove(img);
+            Redo.Push(() =>
+            {
+                Elements.Add(img);
+                window.PaintSurface.Children.Add(img);
+                UndoPushImage(img);
+            });
+        });
+    }
     public Layer(string name)
     {
         Name = name;
