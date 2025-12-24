@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 
 namespace Paint
 {
@@ -84,6 +86,18 @@ namespace Paint
             public List<RectData> rectDatas;
             public string? Stroke;
             public double StrokeThickness;
+        }
+        public class TextBoxElement : ElementData
+        {
+            public double Left, Top, Width, Height;
+            public string? Text;
+            public double FontSize;
+            public string? Foreground;
+            public string? Background;
+            public double Padding;
+            public bool AcceptsReturn;
+            public bool TextWrapping;
+            public string? VerticalContentAlignment;
         }
         public class RectData
         {
@@ -220,6 +234,37 @@ namespace Paint
                                 Height = image.Height,
                                 ImageBase64 = EncodeBitmapToBase64(bitmap)
                             });
+                            break;
+
+                        case Canvas textCanvas:
+                            {
+                                var border = textCanvas.Children.OfType<Border>().FirstOrDefault();
+                                TextBox? tb = null;
+                                if (border?.Child is TextBox bTB)
+                                    tb = bTB;
+                                else
+                                    tb = textCanvas.Children.OfType<TextBox>().FirstOrDefault();
+
+                                if (tb != null)
+                                {
+                                    layerData.Elements.Add(new TextBoxElement
+                                    {
+                                        Type = "TextBox",
+                                        Left = Canvas.GetLeft(textCanvas),
+                                        Top = Canvas.GetTop(textCanvas),
+                                        Width = textCanvas.Width,
+                                        Height = textCanvas.Height,
+                                        Text = tb.Text,
+                                        FontSize = tb.FontSize,
+                                        Foreground = (tb.Foreground as SolidColorBrush)?.Color.ToString() ?? "",
+                                        Background = (tb.Background as SolidColorBrush)?.Color.ToString() ?? "",
+                                        Padding = tb.Padding.Left,
+                                        AcceptsReturn = tb.AcceptsReturn,
+                                        TextWrapping = tb.TextWrapping == TextWrapping.Wrap,
+                                        VerticalContentAlignment = tb.VerticalContentAlignment.ToString()
+                                    });
+                                }
+                            }
                             break;
                     }
                 }
@@ -375,6 +420,74 @@ namespace Paint
                             };
                             window.PaintSurface.Children.Add(newEraser);
                             layer.Elements.Add(newEraser);
+                            break;
+
+                        case "TextBox":
+                            var tbData = e.ToObject<TextBoxElement>();
+
+                            // Recreate the structure used in CreateTextBox: Canvas -> Border -> TextBox + Thumb
+                            var textCanvas = new Canvas
+                            {
+                                Width = tbData.Width,
+                                Height = tbData.Height,
+                                Background = System.Windows.Media.Brushes.Transparent
+                            };
+
+                            var border = new Border
+                            {
+                                Width = tbData.Width,
+                                Height = tbData.Height,
+                                BorderBrush = System.Windows.Media.Brushes.Blue,
+                                BorderThickness = new Thickness(1),
+                                Background = System.Windows.Media.Brushes.Transparent
+                            };
+
+                            var textBox = new TextBox
+                            {
+                                AcceptsReturn = tbData.AcceptsReturn,
+                                TextWrapping = tbData.TextWrapping ? TextWrapping.Wrap : TextWrapping.NoWrap,
+                                BorderThickness = new Thickness(0),
+                                Background = (SolidColorBrush)(new BrushConverter().ConvertFromString(tbData.Background) ?? System.Windows.Media.Brushes.Transparent),
+                                FontSize = tbData.FontSize > 0 ? tbData.FontSize : 16,
+                                Padding = new Thickness(tbData.Padding),
+                                VerticalContentAlignment = Enum.TryParse<VerticalAlignment>(tbData.VerticalContentAlignment, out var vca) ? vca : VerticalAlignment.Top,
+                                Foreground = (SolidColorBrush)(new BrushConverter().ConvertFromString(tbData.Foreground) ?? System.Windows.Media.Brushes.Black),
+                                Text = tbData.Text ?? string.Empty
+                            };
+
+                            border.Child = textBox;
+                            textCanvas.Children.Add(border);
+
+                            // Resize Thumb
+                            Thumb resizeThumb = new Thumb
+                            {
+                                Width = 10,
+                                Height = 10,
+                                Background = System.Windows.Media.Brushes.Blue,
+                                Cursor = Cursors.SizeNWSE
+                            };
+                            Canvas.SetRight(resizeThumb, 0);
+                            Canvas.SetBottom(resizeThumb, 0);
+                            textCanvas.Children.Add(resizeThumb);
+
+                            resizeThumb.DragDelta += (s, ev) =>
+                            {
+                                double newW = Math.Max(60, textCanvas.Width + ev.HorizontalChange);
+                                double newH = Math.Max(30, textCanvas.Height + ev.VerticalChange);
+
+                                textCanvas.Width = newW;
+                                textCanvas.Height = newH;
+
+                                border.Width = newW;
+                                border.Height = newH;
+                            };
+
+                            Canvas.SetLeft(textCanvas, tbData.Left);
+                            Canvas.SetTop(textCanvas, tbData.Top);
+
+                            window.PaintSurface.Children.Add(textCanvas);
+                            layer.Elements.Add(textCanvas);
+                            layer.Elements.Add(resizeThumb);
                             break;
 
                         //////

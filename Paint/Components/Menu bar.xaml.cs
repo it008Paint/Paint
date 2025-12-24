@@ -56,6 +56,7 @@ namespace Paint.Components
             {
                 FileManager.LoadCanvasFromJson(MainWindowRef, dlg.FileName);
                 MainWindowRef.CurrentFilePath = dlg.FileName;
+                MainWindowRef.LayersListBox.SelectedIndex = 0;
                 MainWindowRef.Undo.Clear();
                 MainWindowRef.Redo.Clear();
             }

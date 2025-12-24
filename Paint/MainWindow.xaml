@@ -7,17 +7,17 @@
         xmlns:components="clr-namespace:Paint.Components"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1280" MinHeight="900" MinWidth="1280"
+        Title="MainWindow" Height="700" Width="1280" MinWidth="1280" MinHeight="300"
         KeyDown="Window_KeyDown"
         Focusable="True">
 
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.5*"/>
-            <RowDefinition Height="2.5*"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="120"/>
             <RowDefinition Height="12*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
 
 
@@ -33,8 +33,9 @@
                 <ColumnDefinition Width="164*"/>
                 <ColumnDefinition Width="492*"/>
             </Grid.ColumnDefinitions>
-            
-            <!-- Tool --> <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="128"/>
+
+            <!-- Tool -->
+            <components:SimpleTools x:Name="SimpleToolsRef" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="80" Width="128"/>
             <!-- Shapes -->
             <components:Shapes x:Name="currentshape" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="81" Width="160"/>
             <!-- Colors -->
@@ -42,13 +43,13 @@
             <!-- thickness -->
             <Grid  Grid.Column="3">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="3*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="1.5*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
-                <TextBlock x:Name="thicknesstextblock" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="15" 
-                           Text="{Binding Value,ElementName=thicknessslider, StringFormat='{}{0:F1}'}"></TextBlock>
-                <Slider x:Name="thicknessslider" VerticalAlignment="Bottom" Maximum="50" Minimum="1"></Slider>
+                <TextBlock x:Name="thicknesstextblock" VerticalAlignment="Top" HorizontalAlignment="Right" FontSize="15" 
+                           Text="{Binding Value,ElementName=thicknessslider, StringFormat='{}{0:F1}'}" Margin="0,59,0,0" Grid.RowSpan="2"/>
+                <Slider Grid.Row="0" x:Name="thicknessslider" VerticalAlignment="Top" Maximum="50" Minimum="1" Margin="0,36,0,0"></Slider>
+                <TextBlock Grid.Row="1" Text="Thickness" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,11,0,0"/>
             </Grid>
             <!-- Nâng cao -->
             <Grid Grid.Column="4">
@@ -60,14 +61,14 @@
 
                     <Grid Grid.Column="2" Margin="5,0,0,0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="0.45*"/>  
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="0.45*"/>
+                            <RowDefinition Height="70"/>
                             <RowDefinition Height="0.6*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Layers" FontWeight="Bold" Margin="5" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Text="Layers" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                        <ListBox Grid.Row="1" x:Name="LayersListBox" SelectionChanged="LayersListBox_SelectionChanged" HorizontalContentAlignment="Stretch">
+                        <ListBox Grid.Row="1" x:Name="LayersListBox" Height="70" Width="420" SelectionChanged="LayersListBox_SelectionChanged" HorizontalContentAlignment="Stretch">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="0,2">
@@ -90,7 +91,7 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <Button Grid.Row="2" Content="+ New Layer" Height="30" Margin="5" Click="AddLayer_Click" Background="#DDDDDD"/>
+                        <Button Grid.Row="2" Content="+ New Layer" Height="22" Width="420" Click="AddLayer_Click" Background="#DDDDDD"/>
                     </Grid>
                 </Grid>
             </Grid>
@@ -130,11 +131,11 @@
                     </Canvas>
 
                 </Grid>
-                    
-              
+
+
             </ScrollViewer>
-            
-            
+
+
 
         </Grid>
 

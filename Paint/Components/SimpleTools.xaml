@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              xmlns:local="clr-namespace:Paint.Components"
-             mc:Ignorable="d" Height="80" Width="80">
+             mc:Ignorable="d" Height="80" Width="120">
     <Grid x:Name="tool">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40"/>
@@ -39,6 +39,6 @@
             <fa:IconBlock Icon="VectorSquare"/>
         </Button>
 
-        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
     </Grid>
 </UserControl>

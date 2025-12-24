@@ -1042,27 +1042,6 @@ namespace Paint
             }
             return x;
         }
-
-        
-        private void UndoPush(UIElement element)
-        {
-            double left = Canvas.GetLeft(element);
-            double top = Canvas.GetTop(element);
-
-            Undo.Push(() =>
-            {
-                PaintSurface.Children.Remove(element);
-                Redo.Push(() =>
-                {
-                    PaintSurface.Children.Add(element);
-                    Canvas.SetLeft(element, left);
-                    Canvas.SetTop(element, top);
-                    UndoPush(element);
-                });
-            });
-        }
-
-
         private void CanvasScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Keyboard.Modifiers == ModifierKeys.Control)
@@ -1163,7 +1142,8 @@ namespace Paint
             Canvas.SetTop(textCanvas, position.Y);
 
             PaintSurface.Children.Add(textCanvas);
-
+            CurrentLayer.UndoPush(textCanvas);
+            CurrentLayer.Redo.Clear();
             if (CurrentLayer != null)
             {
                 CurrentLayer.Elements.Add(textCanvas);
