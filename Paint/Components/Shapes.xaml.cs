@@ -120,10 +120,9 @@ namespace Paint.Components
             var main = Window.GetWindow(this) as global::Paint.MainWindow;
             if (main != null)
             {
-                // Ensure the Shapes control in MainWindow.xaml has x:Name="currentshape"
                 if (main.FindName("SimpleToolsRef") is SimpleTools tool)
                 {
-                    if (tool.Selected)
+                    if (Selected && tool.Selected)
                     {
                         tool.Selected = false;
                         tool.Deselect();

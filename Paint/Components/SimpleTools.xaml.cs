@@ -93,10 +93,9 @@ namespace Paint.Components
             var main = Window.GetWindow(this) as global::Paint.MainWindow;
             if (main != null)
             {
-                // Ensure the Shapes control in MainWindow.xaml has x:Name="currentshape"
                 if (main.FindName("currentshape") is Shapes shapes)
                 {
-                    if (shapes.Selected)
+                    if (Selected && shapes.Selected)
                     {
                         shapes.Selected = false;
                         shapes.Deselect();
