@@ -699,6 +699,13 @@ namespace Paint
 
         private void FillColorAtPoint(int x, int y)
         {
+            double scalex = _zoomTransform.ScaleX;
+            double scaley = _zoomTransform.ScaleY;
+            _zoomTransform.ScaleX = 1.0;
+            _zoomTransform.ScaleY = 1.0;
+            PaintSurface.UpdateLayout();
+            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+
             int width = (int)PaintSurface.ActualWidth;
             int height = (int)PaintSurface.ActualHeight;
 
@@ -788,6 +795,11 @@ namespace Paint
             }
 
             CurrentLayer.UndoPushImage(img);
+            CurrentLayer.Redo.Clear();
+            _zoomTransform.ScaleX = scalex;
+            _zoomTransform.ScaleY = scaley;
+            PaintSurface.UpdateLayout();
+            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
         }
 
         private void createshape(Point startpoint)
