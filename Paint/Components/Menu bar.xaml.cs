@@ -32,22 +32,20 @@ namespace Paint.Components
         {
             if (MainWindowRef.CurrentFilePath != null)
             {
-                if (MainWindowRef.Undo.Count != 0)
+                MessageBoxResult result = System.Windows.MessageBox.Show(
+                    "Do you want to save?","",MessageBoxButton.YesNoCancel
+                );
+                if (result == MessageBoxResult.Yes)
                 {
-                    MessageBoxResult result = System.Windows.MessageBox.Show(
-                        "Do you want to save?","",MessageBoxButton.YesNo   
-                    );
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        FileManager.SaveCanvasToJson(MainWindowRef, MainWindowRef.CurrentFilePath);
-                    }
+                    FileManager.SaveCanvasToJson(MainWindowRef, MainWindowRef.CurrentFilePath);
+                }
+                else if (result == MessageBoxResult.Cancel)
+                {
+                    return;
                 }
             }
-                
             MainWindowRef.PaintSurface.Children.Clear();
             MainWindowRef.CurrentFilePath = null;
-            MainWindowRef.Undo.Clear();
-            MainWindowRef.Redo.Clear();
         }
         private void Open_Click(object sender, RoutedEventArgs e)
         {
