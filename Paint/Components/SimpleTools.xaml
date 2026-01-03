@@ -5,12 +5,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              xmlns:local="clr-namespace:Paint.Components"
-             mc:Ignorable="d" Height="80" Width="120">
+             mc:Ignorable="d" Height="80" Width="80">
     <Grid x:Name="tool">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="40"/>
-            <ColumnDefinition Width="40"/>
+            <!--<ColumnDefinition Width="40"/>-->
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -26,7 +26,7 @@
             <fa:IconBlock Icon="FillDrip"/>
         </Button>
 
-        <Button x:Name="TextButton" Grid.Row="0" Grid.Column="2" Width="30" Height="30" ToolTip="Text Tool" Click="TextButton_Click">
+        <Button x:Name="TextButton" Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Text Tool" Click="TextButton_Click">
             <fa:IconBlock Icon="Font"/>
         </Button>
 
@@ -34,11 +34,11 @@
             <fa:IconBlock Icon="Eraser"/>
         </Button>
 
-        <Button x:Name="SelectionButton" Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Selection Tool"
+        <!--<Button x:Name="SelectionButton" Grid.Row="0" Grid.Column="1" Width="30" Height="30" ToolTip="Selection Tool"
         Click="SelectionButton_Click">
             <fa:IconBlock Icon="VectorSquare"/>
-        </Button>
+        </Button>-->
 
-        <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="Tools" HorizontalAlignment="Center" Margin="0,5,0,0"/>
     </Grid>
 </UserControl>
