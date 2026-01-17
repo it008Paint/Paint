@@ -378,7 +378,10 @@ namespace Paint
                             {
                                 Points = polylineData.Points,
                                 Stroke = (SolidColorBrush)(new BrushConverter().ConvertFromString(polylineData.Stroke) ?? ""),
-                                StrokeThickness = polylineData.StrokeThickness
+                                StrokeThickness = polylineData.StrokeThickness,
+                                StrokeStartLineCap = PenLineCap.Round,
+                                StrokeEndLineCap = PenLineCap.Round,
+                                StrokeLineJoin = PenLineJoin.Round
                             };
                             window.PaintSurface.Children.Add(newPolyline);
                             layer.Elements.Add(newPolyline);
