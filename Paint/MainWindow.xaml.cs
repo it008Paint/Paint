@@ -861,13 +861,6 @@ namespace Paint
                 drawshape.StrokeThickness = thicknessslider.Value;
                 drawshape.Fill = Brushes.Transparent;
                 PaintSurface.Children.Add(drawshape);
-
-                if (CurrentLayer != null)
-                {
-                    CurrentLayer.Elements.Add(drawshape);
-                    int zIndex = Layers.Count - Layers.IndexOf(CurrentLayer);
-                    Canvas.SetZIndex(drawshape, zIndex);
-                }
             }
         }
 
